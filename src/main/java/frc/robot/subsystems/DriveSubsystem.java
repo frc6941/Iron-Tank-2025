@@ -19,6 +19,11 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -54,10 +59,21 @@ public class DriveSubsystem extends SubsystemBase {
     private boolean isTurningInPlace = false; // Flag to track if we're currently turning in place
     private double leftStartPosition = 0.0; // Starting position of left motor when turning begins
     private double rightStartPosition = 0.0; // Starting position of right motor when turning begins
+    
+    // Field visualization
+    private final Field2d field = new Field2d();
+    private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
+        Rotation2d.fromDegrees(0),
+        0.0,
+        0.0
+    );
 
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
+        
+        // Set up field visualization
+        SmartDashboard.putData("Field", field);
     }
 
     public void configureMotors() {
@@ -349,6 +365,40 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Right/Follower/Current", rightMotorFollower.getStatorCurrent().getValue());
         Logger.recordOutput("Drive/Right/Follower/Voltage", rightMotorFollower.getSupplyVoltage().getValue());
 
+        // Wheel-specific logging (combined master + follower data)
+        // Left wheel velocity (average of master and follower)
+        double leftWheelVelocity = (leftMotor.getVelocity().getValueAsDouble() + leftMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
+        Logger.recordOutput("Drive/Wheels/Left/Velocity", leftWheelVelocity);
+        
+        // Right wheel velocity (average of master and follower)
+        double rightWheelVelocity = (rightMotor.getVelocity().getValueAsDouble() + rightMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
+        Logger.recordOutput("Drive/Wheels/Right/Velocity", rightWheelVelocity);
+        
+        // Left wheel current (sum of master and follower)
+        double leftWheelCurrent = leftMotor.getStatorCurrent().getValueAsDouble() + leftMotorFollower.getStatorCurrent().getValueAsDouble();
+        Logger.recordOutput("Drive/Wheels/Left/Current", leftWheelCurrent);
+        
+        // Right wheel current (sum of master and follower)
+        double rightWheelCurrent = rightMotor.getStatorCurrent().getValueAsDouble() + rightMotorFollower.getStatorCurrent().getValueAsDouble();
+        Logger.recordOutput("Drive/Wheels/Right/Current", rightWheelCurrent);
+        
+        // Wheel velocity in meters per second (converted from rotations per second)
+        double leftWheelVelocityMPS = leftWheelVelocity * METERS_PER_ROTATION;
+        double rightWheelVelocityMPS = rightWheelVelocity * METERS_PER_ROTATION;
+        Logger.recordOutput("Drive/Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
+        Logger.recordOutput("Drive/Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
+        
+        // Average wheel velocity for overall robot speed
+        double averageWheelVelocityMPS = (leftWheelVelocityMPS + rightWheelVelocityMPS) / 2.0;
+        Logger.recordOutput("Drive/Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
+        
+        // Also log to SmartDashboard for live viewing
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Left/Current", leftWheelCurrent);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Right/Current", rightWheelCurrent);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
+
         // Gyro
         Logger.recordOutput("Drive/Gyro/Yaw", gyro.getYaw().getValue());
         Logger.recordOutput("Drive/Gyro/Pitch", gyro.getPitch().getValue());
@@ -363,7 +413,26 @@ public class DriveSubsystem extends SubsystemBase {
         // This method will be called once per scheduler run
         checkAndUpdatePID();
         handleTurningInPlace(); // Handle PID-controlled turning
+        
+        // Update odometry and field visualization
+        updateOdometry();
+        
         log();
+    }
+    
+    private void updateOdometry() {
+        // Get wheel positions in meters
+        double leftDistance = leftMotor.getPosition().getValueAsDouble() * METERS_PER_ROTATION;
+        double rightDistance = rightMotor.getPosition().getValueAsDouble() * METERS_PER_ROTATION;
+        
+        // Get gyro rotation
+        Rotation2d gyroRotation = Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble());
+        
+        // Update odometry
+        odometry.update(gyroRotation, leftDistance, rightDistance);
+        
+        // Update field visualization
+        field.setRobotPose(odometry.getPoseMeters());
     }
 
     private void checkAndUpdatePID() {

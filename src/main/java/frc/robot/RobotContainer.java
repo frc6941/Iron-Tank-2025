@@ -25,6 +25,11 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    
+    // Debug: Check controller connection
+    System.out.println("Checking for controllers...");
+    System.out.println("Controller 0 connected: " + mainController.getHID().isConnected());
+    System.out.println("Controller 0 name: " + mainController.getHID().getName());
   }
 
   /** Use this method to define your trigger->command mappings. */
