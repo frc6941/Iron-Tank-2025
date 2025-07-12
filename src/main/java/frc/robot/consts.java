@@ -37,14 +37,14 @@ public class consts {
      * ============================== */
     public static final class MotionMagic {
         public static final class leftMotorMM {
-            public static final TunableNumber CRUISE_VELOCITY = new TunableNumber("leftCruiseVelocity", 1000.0);
-            public static final TunableNumber ACCELERATION = new TunableNumber("leftAcceleration", 500.0);
-            public static final TunableNumber JERK = new TunableNumber("leftJerk", 100.0);
+            public static final TunableNumber CRUISE_VELOCITY = new TunableNumber("leftCruiseVelocity", 100.0);
+            public static final TunableNumber ACCELERATION = new TunableNumber("leftAcceleration", 50.0);
+            public static final TunableNumber JERK = new TunableNumber("leftJerk", 10.0);
         }
         public static final class rightMotorMM {
-            public static final TunableNumber CRUISE_VELOCITY = new TunableNumber("rightCruiseVelocity", 1000.0);
-            public static final TunableNumber ACCELERATION = new TunableNumber("rightAcceleration", 500.0);
-            public static final TunableNumber JERK = new TunableNumber("rightJerk", 100.0);
+            public static final TunableNumber CRUISE_VELOCITY = new TunableNumber("rightCruiseVelocity", 100.0);
+            public static final TunableNumber ACCELERATION = new TunableNumber("rightAcceleration", 50.0);
+            public static final TunableNumber JERK = new TunableNumber("rightJerk", 10.0);
         }
     }
 
@@ -53,9 +53,9 @@ public class consts {
      * ============================== */
     public static final class Superstructures {
         public static final class Chassis {
-            public static final double TRACK_WIDTH = 0.69; // TODO: Update to real value
-            public static final double WHEEL_DIAMETER = 0.1524; // TODO: Update to real value
-            public static final double GEAR_RATIO = 10.71; // Motor rotations per wheel rotation TODO: Update to real value
+            public static final double TRACK_WIDTH = 0.677;
+            public static final double WHEEL_DIAMETER = 0.1524;
+            public static final double GEAR_RATIO = 8.46; // Motor rotations per wheel rotation TODO: Update to real value
         }
     }
 
