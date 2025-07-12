@@ -15,6 +15,7 @@ public class consts {
         public static final int LEFTMOTORFOLLEWER = 1;
         public static final int RIGHTMOTOR = 2;
         public static final int RIGHTMOTORFOLLOWER = 3;
+        public static final int GYRO = 4;
     }
 
     /* =============================== |
@@ -22,13 +23,19 @@ public class consts {
      * ============================== */
     public static final class PID {
         public static final class driveMotorPID {
-            public static final TunableNumber kP = new TunableNumber("kP", 0.0);
+            public static final TunableNumber kP = new TunableNumber("kP", 0.1);
             public static final TunableNumber kI = new TunableNumber("kI", 0.0);
-            public static final TunableNumber kD = new TunableNumber("kD", 0.0);
+            public static final TunableNumber kD = new TunableNumber("kD", 0.01);
             public static final TunableNumber kS = new TunableNumber("kS", 0.0);
             public static final TunableNumber kV = new TunableNumber("kV", 0.0);
             public static final TunableNumber kA = new TunableNumber("kA", 0.0);
             public static final TunableNumber kG = new TunableNumber("kG", 0.0);
+        }
+        public static final class turnPID {
+            public static final TunableNumber kP = new TunableNumber("turnKp", 0.02);
+            public static final TunableNumber kI = new TunableNumber("turnKi", 0.0);
+            public static final TunableNumber kD = new TunableNumber("turnKd", 0.001);
+            public static final TunableNumber tolerance = new TunableNumber("turnTolerance", 2.0);
         }
     }
 

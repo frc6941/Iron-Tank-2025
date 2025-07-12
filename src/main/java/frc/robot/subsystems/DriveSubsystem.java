@@ -18,6 +18,12 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
+import com.ctre.phoenix6.hardware.Pigeon2;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -33,6 +39,9 @@ public class DriveSubsystem extends SubsystemBase {
     private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
     private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
 
+    // Gyro
+    private static final Pigeon2 gyro = new Pigeon2(consts.CANID.GYRO);
+
     // Controls
     private static final MotorController leftMotorController = new PWMTalonFX(leftMotor.getDeviceID());
     private static final MotorController rightMotorController = new PWMTalonFX(rightMotor.getDeviceID());
@@ -46,10 +55,25 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Attitude Variables
     private double currentHeading = 0.0; // Current heading of the robot in degrees. Initializes at 0 degrees.
+    private double targetHeading = 0.0; // Target heading for turning operations
+    private boolean isTurningInPlace = false; // Flag to track if we're currently turning in place
+    private double leftStartPosition = 0.0; // Starting position of left motor when turning begins
+    private double rightStartPosition = 0.0; // Starting position of right motor when turning begins
+    
+    // Field visualization
+    private final Field2d field = new Field2d();
+    private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
+        Rotation2d.fromDegrees(0),
+        0.0,
+        0.0
+    );
 
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
+        
+        // Set up field visualization
+        SmartDashboard.putData("Field", field);
     }
 
     public void configureMotors() {
@@ -158,14 +182,38 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void turnInPlace(double angle) {
-        // Calculate the distance each wheel needs to travel.
+        // Calculate the distance each wheel needs to travel for the desired rotation
         double distance = (angle / 360.0) * Math.PI * consts.Superstructures.Chassis.TRACK_WIDTH; // in meters
         double rotations = distance * ROTATIONS_PER_METER;
-        // Set the target position for each motor.
-        double leftTargetPosition = leftMotor.getPosition().getValueAsDouble() + rotations;
-        double rightTargetPosition = rightMotor.getPosition().getValueAsDouble() - rotations;
+        
+        // Store starting positions
+        leftStartPosition = leftMotor.getPosition().getValueAsDouble();
+        rightStartPosition = rightMotor.getPosition().getValueAsDouble();
+        
+        // Set target positions for differential turning
+        double leftTargetPosition = leftStartPosition + rotations;
+        double rightTargetPosition = rightStartPosition - rotations;
+        
+        // Set the target heading for logging
+        targetHeading = currentHeading + angle;
+        isTurningInPlace = true;
+        
+        // Normalize target heading to 0-360 degrees
+        while (targetHeading >= 360) {
+            targetHeading -= 360;
+        }
+        while (targetHeading < 0) {
+            targetHeading += 360;
+        }
+        
+        // Set motor positions
         setLeftMotorPosition(leftTargetPosition);
         setRightMotorPosition(rightTargetPosition);
+        
+        Logger.recordOutput("DriveSubsystem/TargetHeading", targetHeading);
+        Logger.recordOutput("DriveSubsystem/IsTurningInPlace", isTurningInPlace);
+        Logger.recordOutput("DriveSubsystem/TurnAngle", angle);
+        Logger.recordOutput("DriveSubsystem/TurnRotations", rotations);
     }
 
     public void turnToFace(double angle) {
@@ -228,6 +276,62 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void resetFacingAngle() {
         currentHeading = 0.0;
+        targetHeading = 0.0;
+        isTurningInPlace = false;
+    }
+    
+    /**
+     * Handles PID control for turning in place
+     * This method should be called in the periodic() method
+     */
+    private void handleTurningInPlace() {
+        if (!isTurningInPlace) {
+            return;
+        }
+        
+        // Get current heading from gyro
+        currentHeading = gyro.getYaw().getValueAsDouble();
+        
+        // Calculate the shortest angle difference
+        double angleDifference = targetHeading - currentHeading;
+        
+        // Normalize to -180 to 180 degrees for shortest path
+        if (angleDifference > 180) {
+            angleDifference -= 360;
+        } else if (angleDifference < -180) {
+            angleDifference += 360;
+        }
+        
+        // Check if we've reached the target within tolerance
+        if (Math.abs(angleDifference) <= consts.PID.turnPID.tolerance.get()) {
+            stopMotors();
+            isTurningInPlace = false;
+            currentHeading = targetHeading;
+            Logger.recordOutput("DriveSubsystem/TurnComplete", true);
+            return;
+        }
+        
+        // Calculate PID output
+        double kP = consts.PID.turnPID.kP.get();
+        double kI = consts.PID.turnPID.kI.get();
+        double kD = consts.PID.turnPID.kD.get();
+        
+        // Simple PID calculation (you might want to add integral and derivative terms)
+        double output = angleDifference * kP;
+        
+        // Clamp output to reasonable limits
+        output = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, output));
+        
+        // Apply differential drive (left motor forward, right motor backward for turning)
+        double leftSpeed = output;
+        double rightSpeed = -output;
+        
+        // Set motor speeds
+        leftMotor.setControl(velocityRequest.withVelocity(leftSpeed * 1000)); // Convert to RPM
+        rightMotor.setControl(velocityRequest.withVelocity(rightSpeed * 1000));
+        
+        Logger.recordOutput("DriveSubsystem/AngleDifference", angleDifference);
+        Logger.recordOutput("DriveSubsystem/TurnOutput", output);
     }
 
     public void log() {
@@ -260,11 +364,104 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Right/Follower/Acceleration", rightMotorFollower.getAcceleration().getValue());
         Logger.recordOutput("Drive/Right/Follower/Current", rightMotorFollower.getStatorCurrent().getValue());
         Logger.recordOutput("Drive/Right/Follower/Voltage", rightMotorFollower.getSupplyVoltage().getValue());
+
+        // Wheel-specific logging (combined master + follower data)
+        // Left wheel velocity (average of master and follower)
+        double leftWheelVelocity = (leftMotor.getVelocity().getValueAsDouble() + leftMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
+        Logger.recordOutput("Drive/Wheels/Left/Velocity", leftWheelVelocity);
+        
+        // Right wheel velocity (average of master and follower)
+        double rightWheelVelocity = (rightMotor.getVelocity().getValueAsDouble() + rightMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
+        Logger.recordOutput("Drive/Wheels/Right/Velocity", rightWheelVelocity);
+        
+        // Left wheel current (sum of master and follower)
+        double leftWheelCurrent = leftMotor.getStatorCurrent().getValueAsDouble() + leftMotorFollower.getStatorCurrent().getValueAsDouble();
+        Logger.recordOutput("Drive/Wheels/Left/Current", leftWheelCurrent);
+        
+        // Right wheel current (sum of master and follower)
+        double rightWheelCurrent = rightMotor.getStatorCurrent().getValueAsDouble() + rightMotorFollower.getStatorCurrent().getValueAsDouble();
+        Logger.recordOutput("Drive/Wheels/Right/Current", rightWheelCurrent);
+        
+        // Wheel velocity in meters per second (converted from rotations per second)
+        double leftWheelVelocityMPS = leftWheelVelocity * METERS_PER_ROTATION;
+        double rightWheelVelocityMPS = rightWheelVelocity * METERS_PER_ROTATION;
+        Logger.recordOutput("Drive/Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
+        Logger.recordOutput("Drive/Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
+        
+        // Average wheel velocity for overall robot speed
+        double averageWheelVelocityMPS = (leftWheelVelocityMPS + rightWheelVelocityMPS) / 2.0;
+        Logger.recordOutput("Drive/Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
+        
+        // Also log to SmartDashboard for live viewing
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Left/Current", leftWheelCurrent);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Right/Current", rightWheelCurrent);
+        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
+
+        // Gyro
+        Logger.recordOutput("Drive/Gyro/Yaw", gyro.getYaw().getValue());
+        Logger.recordOutput("Drive/Gyro/Pitch", gyro.getPitch().getValue());
+        Logger.recordOutput("Drive/Gyro/Roll", gyro.getRoll().getValue());
+        Logger.recordOutput("Drive/CurrentHeading", currentHeading);
+        Logger.recordOutput("Drive/TargetHeading", targetHeading);
+        Logger.recordOutput("Drive/IsTurningInPlace", isTurningInPlace);
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+        checkAndUpdatePID();
+        handleTurningInPlace(); // Handle PID-controlled turning
+        
+        // Update odometry and field visualization
+        updateOdometry();
+        
         log();
+    }
+    
+    private void updateOdometry() {
+        // Get wheel positions in meters
+        double leftDistance = leftMotor.getPosition().getValueAsDouble() * METERS_PER_ROTATION;
+        double rightDistance = rightMotor.getPosition().getValueAsDouble() * METERS_PER_ROTATION;
+        
+        // Get gyro rotation
+        Rotation2d gyroRotation = Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble());
+        
+        // Update odometry
+        odometry.update(gyroRotation, leftDistance, rightDistance);
+        
+        // Update field visualization
+        field.setRobotPose(odometry.getPoseMeters());
+    }
+
+    private void checkAndUpdatePID() {
+        // Check if any PID values have changed
+        boolean pidChanged = consts.PID.driveMotorPID.kP.hasChanged() ||
+                           consts.PID.driveMotorPID.kI.hasChanged() ||
+                           consts.PID.driveMotorPID.kD.hasChanged() ||
+                           consts.PID.driveMotorPID.kS.hasChanged() ||
+                           consts.PID.driveMotorPID.kV.hasChanged() ||
+                           consts.PID.driveMotorPID.kA.hasChanged() ||
+                           consts.PID.driveMotorPID.kG.hasChanged();
+
+        // Check if Motion Magic values have changed
+        boolean mmChanged = consts.MotionMagic.leftMotorMM.CRUISE_VELOCITY.hasChanged() ||
+                          consts.MotionMagic.leftMotorMM.ACCELERATION.hasChanged() ||
+                          consts.MotionMagic.leftMotorMM.JERK.hasChanged() ||
+                          consts.MotionMagic.rightMotorMM.CRUISE_VELOCITY.hasChanged() ||
+                          consts.MotionMagic.rightMotorMM.ACCELERATION.hasChanged() ||
+                          consts.MotionMagic.rightMotorMM.JERK.hasChanged();
+
+        // If any values changed, reconfigure the motors
+        if (pidChanged || mmChanged) {
+            Logger.recordOutput("Drive/PID/Reconfiguring", true);
+            configureMotors();
+            Logger.recordOutput("Drive/PID/kP", consts.PID.driveMotorPID.kP.get());
+            Logger.recordOutput("Drive/PID/kI", consts.PID.driveMotorPID.kI.get());
+            Logger.recordOutput("Drive/PID/kD", consts.PID.driveMotorPID.kD.get());
+        } else {
+            Logger.recordOutput("Drive/PID/Reconfiguring", false);
+        }
     }
 }

@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This is a code to control a robot that competes in 2025 first robotics competition 
+You are a Experienced Java Codewriter and the head of the Programming for team 6941, the reigning and defending champion of the world.
+
+project uses :
+
+    WPIlib: https://github.wpilib.org/allwpilib/docs/release/java/index.html, as framework for controlling the robot, also uses some of its featrues
+
+    ctre: https://api.ctr-electronics.com/phoenix6/release/java/, as api for control all motors and actuators
+
+    advantage kit: https://docs.advantagekit.org/, as a logging framwork for logging data for debugging and testing
+
+always refer to the above api for usages and implimentations when creating and debugging code
+
+    the project uses Command based Programming 
+        each parts of the robot is divided into subsystems    
+        the subsystems are registered in RobotContainer.java
+        Commands uses public methods in subsystems to control the robot
+        Commands are bind to triggers in RobotContainer.java
+    Subsystems uses Hardware Abstraction
+        IO for each subsystem        
+    Most constants are recorded in RobotConstants.java
+        Constants that need tuning are using TunableNumbers 
+
+<making_code_changes>
+when writing a new feature,
+1. Always log the important outputs using advantage kit logging feature, unless the output is already autologged.
+2. do not add logging to the console, unless prompted by the user to debug a code
+2. Always add the numbers that may need changing by the user to RobotConstants.java as TunableNumbers
+</making_code_changes>
+
+<debugging>
+when asked by user to debug or user is reporting a problem, always add system.out.println() for debug messages.
+</debugging>
+
+<reading_code>
+when reading, understanding and explaining code, Always think with the code's connection with the compitition robot in mind. 
+
+    
