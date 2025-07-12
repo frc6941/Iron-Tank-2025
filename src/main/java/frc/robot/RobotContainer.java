@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -35,15 +36,46 @@ public class RobotContainer {
   /** Use this method to define your trigger->command mappings. */
   private void configureBindings() {
     // Put any trigger->command mappings here.
-    Command velocityArcadeDrive =
+    Command tankDrive =
       driveSubsystem.run(() -> {
+        // Left stick Y for forward/backward movement
         double forwardInput = deadBand(-mainController.getLeftY(), 0.1);
-        double turnInput = deadBand(mainController.getLeftX(), 0.1);
+        
+        // Right stick X for turning (left/right)
+        double turnInput = deadBand(mainController.getRightX(), 0.1);
 
+        // Apply the inputs to the drive subsystem
         driveSubsystem.arcadeDrive(forwardInput, turnInput);
+        
+        // Log controller inputs for debugging
+        System.out.println("Forward: " + forwardInput + ", Turn: " + turnInput);
       });
 
-    driveSubsystem.setDefaultCommand(velocityArcadeDrive);
+    driveSubsystem.setDefaultCommand(tankDrive);
+    
+    // Test command - Press A button to turn 90 degrees right
+    new JoystickButton(mainController.getHID(), 1).onTrue(
+      driveSubsystem.runOnce(() -> {
+        System.out.println("Testing turn command - turning 90 degrees right");
+        driveSubsystem.turnInPlace(90.0);
+      })
+    );
+    
+    // Test command - Press B button to turn 90 degrees left
+    new JoystickButton(mainController.getHID(), 2).onTrue(
+      driveSubsystem.runOnce(() -> {
+        System.out.println("Testing turn command - turning 90 degrees left");
+        driveSubsystem.turnInPlace(-90.0);
+      })
+    );
+    
+    // Test command - Press X button to reset facing angle
+    new JoystickButton(mainController.getHID(), 3).onTrue(
+      driveSubsystem.runOnce(() -> {
+        System.out.println("Resetting facing angle");
+        driveSubsystem.resetFacingAngle();
+      })
+    );
   }
 
   public static double deadBand(double value, double tolerance) {
