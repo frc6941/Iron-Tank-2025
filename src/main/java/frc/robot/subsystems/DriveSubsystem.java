@@ -268,6 +268,28 @@ public class DriveSubsystem extends SubsystemBase {
         // Could be used to reset odometry if needed
         Logger.recordOutput("DriveSubsystem/ResetFacingAngle", true);
     }
+
+    private void updatePID() {
+        // Check if any PID values have changed
+        boolean pidChanged = consts.PID.driveMotorPID.kP.hasChanged() ||
+                           consts.PID.driveMotorPID.kI.hasChanged() ||
+                           consts.PID.driveMotorPID.kD.hasChanged() ||
+                           consts.PID.driveMotorPID.kS.hasChanged() ||
+                           consts.PID.driveMotorPID.kV.hasChanged() ||
+                           consts.PID.driveMotorPID.kA.hasChanged() ||
+                           consts.PID.driveMotorPID.kG.hasChanged();
+
+        // If any values changed, reconfigure the motors
+        if (pidChanged) {
+            Logger.recordOutput("Drive/PID/Reconfiguring", true);
+            configureMotors();
+            Logger.recordOutput("Drive/PID/kP", consts.PID.driveMotorPID.kP.get());
+            Logger.recordOutput("Drive/PID/kI", consts.PID.driveMotorPID.kI.get());
+            Logger.recordOutput("Drive/PID/kD", consts.PID.driveMotorPID.kD.get());
+        } else {
+            Logger.recordOutput("Drive/PID/Reconfiguring", false);
+        }
+    }
     
     public void log() {
         // Left Motors
@@ -326,37 +348,16 @@ public class DriveSubsystem extends SubsystemBase {
         // Average wheel velocity for overall robot speed
         double averageWheelVelocityMPS = (leftWheelVelocityMPS + rightWheelVelocityMPS) / 2.0;
         Logger.recordOutput("Drive/Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
-
-        
     }
 
+    // This method will be called once per scheduler run
     @Override
     public void periodic() {
-        // This method will be called once per scheduler run
-        checkAndUpdatePID();
+        
+        updatePID();
         
         log();
     }
     
-    private void checkAndUpdatePID() {
-        // Check if any PID values have changed
-        boolean pidChanged = consts.PID.driveMotorPID.kP.hasChanged() ||
-                           consts.PID.driveMotorPID.kI.hasChanged() ||
-                           consts.PID.driveMotorPID.kD.hasChanged() ||
-                           consts.PID.driveMotorPID.kS.hasChanged() ||
-                           consts.PID.driveMotorPID.kV.hasChanged() ||
-                           consts.PID.driveMotorPID.kA.hasChanged() ||
-                           consts.PID.driveMotorPID.kG.hasChanged();
 
-        // If any values changed, reconfigure the motors
-        if (pidChanged) {
-            Logger.recordOutput("Drive/PID/Reconfiguring", true);
-            configureMotors();
-            Logger.recordOutput("Drive/PID/kP", consts.PID.driveMotorPID.kP.get());
-            Logger.recordOutput("Drive/PID/kI", consts.PID.driveMotorPID.kI.get());
-            Logger.recordOutput("Drive/PID/kD", consts.PID.driveMotorPID.kD.get());
-        } else {
-            Logger.recordOutput("Drive/PID/Reconfiguring", false);
-        }
-    }
 }
