@@ -19,45 +19,6 @@ import frc.robot.consts;
 
 public class DriveSubsystem extends SubsystemBase {
 
-    // Custom motor controller class to wrap TalonFX for DifferentialDrive
-    private static class TalonFXMotorController implements MotorController {
-        private final TalonFX motor;
-        
-        public TalonFXMotorController(TalonFX motor) {
-            this.motor = motor;
-        }
-        
-        @Override
-        public void set(double speed) {
-            motor.setControl(new DutyCycleOut(speed));
-        }
-        
-        @Override
-        public double get() {
-            return motor.getDutyCycle().getValueAsDouble();
-        }
-        
-        @Override
-        public void setInverted(boolean isInverted) {
-            // Inversion is handled in motor configuration
-        }
-        
-        @Override
-        public boolean getInverted() {
-            return false; // Inversion handled in motor config
-        }
-        
-        @Override
-        public void disable() {
-            motor.setControl(new DutyCycleOut(0.0));
-        }
-        
-        @Override
-        public void stopMotor() {
-            motor.setControl(new DutyCycleOut(0.0));
-        }
-    }
-
     /* Definitions */
     // T1 constants that are either calculated or retrieved from the robot's hardware.
     private static final double WHEEL_CIRCUMFERENCE = Math.PI * consts.Superstructures.Chassis.WHEEL_DIAMETER; // in meters
@@ -86,6 +47,45 @@ public class DriveSubsystem extends SubsystemBase {
         // Configure the motors
         configureMotors();
         
+    }
+
+    // Custom motor controller class to wrap TalonFX for DifferentialDrive
+    private static class TalonFXMotorController implements MotorController {
+        private final TalonFX motor;
+        
+        public TalonFXMotorController(TalonFX motor) {
+            this.motor = motor;
+        }
+        
+        @Override
+        public void set(double speed) {
+            motor.setControl(new VelocityVoltage(speed));
+        }
+        
+        @Override
+        public double get() {
+            return motor.getDutyCycle().getValueAsDouble();
+        }
+        
+        @Override
+        public void setInverted(boolean isInverted) {
+            // Inversion is handled in motor configuration
+        }
+        
+        @Override
+        public boolean getInverted() {
+            return false; // Inversion handled in motor config
+        }
+        
+        @Override
+        public void disable() {
+            motor.setControl(new DutyCycleOut(0.0));
+        }
+        
+        @Override
+        public void stopMotor() {
+            motor.setControl(new DutyCycleOut(0.0));
+        }
     }
 
     public void configureMotors() {
@@ -139,8 +139,8 @@ public class DriveSubsystem extends SubsystemBase {
         rotation = Math.abs(rotation) < 0.05 ? 0.0 : rotation;
         
         // Apply speed limiting
-        forward = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, forward));
-        rotation = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, rotation));
+        forward = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, forward));
+        rotation = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, rotation));
         
         // Use DifferentialDrive
         differentialDrive.arcadeDrive(forward, rotation);
@@ -152,8 +152,8 @@ public class DriveSubsystem extends SubsystemBase {
         rightSpeed = Math.abs(rightSpeed) < 0.05 ? 0.0 : rightSpeed;
         
         // Apply speed limiting
-        leftSpeed = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, leftSpeed));
-        rightSpeed = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, rightSpeed));
+        leftSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, leftSpeed));
+        rightSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, rightSpeed));
         
         // Use DifferentialDrive
         differentialDrive.tankDrive(leftSpeed, rightSpeed);
@@ -214,12 +214,6 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("DriveSubsystem/TurnRotations", rotations);
     }
 
-    public void turnToFace(double angle) {
-        // Without gyro, we can only turn relative to current position
-        // This method now just turns the specified angle
-        turnInPlace(angle);
-    }
-
     public void driveLeftDistance(double distance) {
         double deltaRotations = distance * ROTATIONS_PER_METER;
         double targetPosition = leftMotor.getPosition().getValueAsDouble() + deltaRotations;
@@ -261,12 +255,6 @@ public class DriveSubsystem extends SubsystemBase {
     public void stopMotors() {
         stopLeftMotor();
         stopRightMotor();
-    }
-
-    public void resetFacingAngle() {
-        // Without gyro, this method doesn't do anything meaningful
-        // Could be used to reset odometry if needed
-        Logger.recordOutput("DriveSubsystem/ResetFacingAngle", true);
     }
 
     private void updatePID() {
