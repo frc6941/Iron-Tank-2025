@@ -5,7 +5,9 @@
 package frc.robot;
 
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
+  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
@@ -43,6 +46,41 @@ public class RobotContainer {
       });
 
     driveSubsystem.setDefaultCommand(tankDrive);
+
+    // Intake Controls
+    // Y button - Set current position as zero
+    mainController.y().onTrue(intakeSubsystem.runOnce(() -> {
+      intakeSubsystem.setZeroPosition();
+    }));
+
+    // B button - Home (first press) or Intake (second press when at zero)
+    mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
+      if (intakeSubsystem.isAtZero()) {
+        // Second B press - start intake
+        intakeSubsystem.startIntake();
+      } else {
+        // First B press - go to home
+        intakeSubsystem.goToHome();
+      }
+    }));
+
+    // Left shoulder button - Hold (stop roller) and Elevate (move pivot upward after 1 second)
+    mainController.leftBumper().onTrue(
+      intakeSubsystem.runOnce(() -> intakeSubsystem.hold())
+      .andThen(new WaitCommand(1.0))
+      .andThen(intakeSubsystem.runOnce(() -> intakeSubsystem.elevate()))
+    );
+
+    // Right shoulder button - Eject (first press) or Stop Eject (second press)
+    mainController.rightBumper().onTrue(intakeSubsystem.runOnce(() -> {
+      if (intakeSubsystem.getRollerState().equals("Ejecting")) {
+        // Second right shoulder press - stop eject
+        intakeSubsystem.stopEject();
+      } else {
+        // First right shoulder press - start eject
+        intakeSubsystem.startEject();
+      }
+    }));
   }
 
   public static double deadBand(double value, double tolerance) {

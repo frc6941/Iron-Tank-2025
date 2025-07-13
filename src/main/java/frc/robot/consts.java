@@ -44,10 +44,15 @@ public class consts {
             public static final TunableNumber kA = new TunableNumber("position_kA", 0.0);
             public static final TunableNumber kG = new TunableNumber("position_kG", 0.0);
         }
-        public static final class intakePivotPID {
-            public static final TunableNumber kP = new TunableNumber("intakePivot_kP", 1);
-            public static final TunableNumber kI = new TunableNumber("intakePivot_kI", 0.0);
-            public static final TunableNumber kD = new TunableNumber("intakePivot_kD", 0.0);
+        public static final class pivotPID {
+            public static final TunableNumber kP = new TunableNumber("pivot_kP", 1);
+            public static final TunableNumber kI = new TunableNumber("pivot_kI", 0.0);
+            public static final TunableNumber kD = new TunableNumber("pivot_kD", 0.0);
+        }
+        public static final class rollerPID {
+            public static final TunableNumber kP = new TunableNumber("roller_kP", 0.1);
+            public static final TunableNumber kI = new TunableNumber("roller_kI", 0.0);
+            public static final TunableNumber kD = new TunableNumber("roller_kD", 0.0);
         }
     }
 
@@ -65,6 +70,8 @@ public class consts {
             public static final double PIVOT_GEAR_RATIO = 1.0; // Motor rotations per pivot rotation TODO: Update to real value
             public static final double PIVOT_MAX_ANGLE = 90.0; // Maximum angle in degrees
             public static final double PIVOT_MIN_ANGLE = 0.0; // Minimum angle in degrees
+            public static final double HOLD_ANGLE_OFFSET = 0.5; // Hold position offset from zero in rotations
+            public static final double POSITION_TOLERANCE = 0.05; // Position tolerance in rotations
 
             public static final double L1 = 100; // Height in degrees for L1 state
         }
@@ -83,6 +90,9 @@ public class consts {
             // These values are copied from frc6941/2025-Competition-Robot
             public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Amperes
             public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
+            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Amperes
+            public static final double ROLLER_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
+            public static final double ROLLER_INTAKE_SPEED = 10.0; // Roller speed in rotations per second
         }
     }
 
@@ -91,4 +101,10 @@ public class consts {
      * ============================== */
     // TunableNumber
     public static final boolean TUNING = true;
+    
+    // Intake tunable constants
+    public static final TunableNumber INTAKE_ROLLER_SPEED = new TunableNumber("intake_roller_speed", 10.0);
+    public static final TunableNumber INTAKE_HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
+    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 0.5);
+    public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
 }
