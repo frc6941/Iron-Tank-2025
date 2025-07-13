@@ -16,8 +16,8 @@ import frc.robot.consts;
 
 public class IntakeSubsystem extends SubsystemBase {
     // Motors
-    private static final TalonFX pivot = new TalonFX(consts.CANID.PIVOTMOTOR);
-    private static final TalonFX roller = new TalonFX(consts.CANID.ROLLERMOTOR);
+    private static final TalonFX motorPivot = new TalonFX(consts.CANID.PIVOTMOTOR);
+    private static final TalonFX motorRoller = new TalonFX(consts.CANID.ROLLERMOTOR);
 
     // Motor Controls
     private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(false);
@@ -52,6 +52,12 @@ public class IntakeSubsystem extends SubsystemBase {
         .withKP(consts.PID.intakePivotPID.kP.get())
         .withKI(consts.PID.intakePivotPID.kI.get())
         .withKD(consts.PID.intakePivotPID.kD.get()));
+
+        motorPivot.getConfigurator().apply(pivotConfig);
+
+        motorPivot.clearStickyFaults();
+
+        motorPivot.optimizeBusUtilization();
     }
 
     public void setPivotPosition(double position) {
@@ -61,7 +67,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public void setPivotVoltage(double voltage) {
         // Ensure the voltage is within the range of -12 to 12 volts
         voltage = MathUtil.clamp(voltage, -12.0, 12.0);
-        pivot.setControl(voltageOut.withOutput(voltage));
+        motorPivot.setControl(voltageOut.withOutput(voltage));
     }
 
     public void setRollerSpeed(double rps) {
@@ -72,7 +78,7 @@ public class IntakeSubsystem extends SubsystemBase {
         // Naturally we want to stop the roller when zeroing
         setRollerSpeed(0.0);
 
-        // Find the lowest point
+        // Find the lowest point using current
         if (currentFilterValue <= 18) {
             setPivotVoltage(0.5);
             setWantedState(WantedState.ZERO);
@@ -91,10 +97,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void elevate() {
-
+        // By elevate we mean to raise the intaker to L1.
     }
 
     public void eject() {
+        // Eject the coral by running the roller in reverse
 
     }
 
@@ -112,33 +119,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void setWantedState(WantedState state) {
         this.wantedState = state;
-        switch (state) {
-            case ZERO:
-                zero();
-                break;
-            case INTAKE:
-                intake();
-                break;
-            case ELEVATE:
-                elevate();
-                break;
-            case EJECT:
-                eject();
-                break;
-            case HOLD:
-                hold();
-                break;
-            case HOME:
-                home();
-                break;
-            case OFF:
-                off();
-                break;
-        }
     }
 
     @Override
     public void periodic() {
-        currentFilterValue = filter.calculate(pivot.getStatorCurrent().getValueAsDouble());
+        currentFilterValue = filter.calculate(motorPivot.getStatorCurrent().getValueAsDouble());
     }
 }
