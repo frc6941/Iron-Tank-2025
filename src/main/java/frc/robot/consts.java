@@ -30,6 +30,15 @@ public class consts {
             public static final TunableNumber kA = new TunableNumber("kA", 0.0);
             public static final TunableNumber kG = new TunableNumber("kG", 0.0);
         }
+        public static final class positionPID{
+            public static final TunableNumber kP = new TunableNumber("kP", 1);
+            public static final TunableNumber kI = new TunableNumber("kI", 0.0);
+            public static final TunableNumber kD = new TunableNumber("kD", 0.0);
+            public static final TunableNumber kS = new TunableNumber("kS", 0.0);
+            public static final TunableNumber kV = new TunableNumber("kV", 0.0);
+            public static final TunableNumber kA = new TunableNumber("kA", 0.0);
+            public static final TunableNumber kG = new TunableNumber("kG", 0.0);
+        }
     }
 
     /* =============================== |

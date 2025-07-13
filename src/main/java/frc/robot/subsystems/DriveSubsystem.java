@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -72,6 +73,7 @@ public class DriveSubsystem extends SubsystemBase {
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
+    private final PIDController positionPID = new PIDController(consts.PID.positionPID.kP.get(), consts.PID.positionPID.kI.get(), consts.PID.positionPID.kD.get());
 
     // Motor Controllers for DifferentialDrive
     private static final MotorController leftMotorController = new TalonFXMotorController(leftMotor);
@@ -175,16 +177,14 @@ public class DriveSubsystem extends SubsystemBase {
     public void setLeftMotorPosition(double position) {
         // Convert position to velocity for simple control
         double currentPosition = leftMotor.getPosition().getValueAsDouble();
-        double positionError = position - currentPosition;
-        double velocity = positionError * 10.0; // Simple P control
+        double velocity = positionPID.calculate(currentPosition, position);
         leftMotor.setControl(velocityRequest.withVelocity(velocity));
     }
 
     public void setRightMotorPosition(double position) {
         // Convert position to velocity for simple control
         double currentPosition = rightMotor.getPosition().getValueAsDouble();
-        double positionError = position - currentPosition;
-        double velocity = positionError * 10.0; // Simple P control
+        double velocity = positionPID.calculate(currentPosition, position);
         rightMotor.setControl(velocityRequest.withVelocity(velocity));
     }
 
