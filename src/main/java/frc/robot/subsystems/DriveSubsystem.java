@@ -2,12 +2,10 @@ package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -15,17 +13,49 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
-import com.ctre.phoenix6.hardware.Pigeon2;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 
 public class DriveSubsystem extends SubsystemBase {
+
+    // Custom motor controller class to wrap TalonFX for DifferentialDrive
+    private static class TalonFXMotorController implements MotorController {
+        private final TalonFX motor;
+        
+        public TalonFXMotorController(TalonFX motor) {
+            this.motor = motor;
+        }
+        
+        @Override
+        public void set(double speed) {
+            motor.setControl(new DutyCycleOut(speed));
+        }
+        
+        @Override
+        public double get() {
+            return motor.getDutyCycle().getValueAsDouble();
+        }
+        
+        @Override
+        public void setInverted(boolean isInverted) {
+            // Inversion is handled in motor configuration
+        }
+        
+        @Override
+        public boolean getInverted() {
+            return false; // Inversion handled in motor config
+        }
+        
+        @Override
+        public void disable() {
+            motor.setControl(new DutyCycleOut(0.0));
+        }
+        
+        @Override
+        public void stopMotor() {
+            motor.setControl(new DutyCycleOut(0.0));
+        }
+    }
 
     /* Definitions */
     // T1 constants that are either calculated or retrieved from the robot's hardware.
@@ -39,41 +69,21 @@ public class DriveSubsystem extends SubsystemBase {
     private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
     private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
 
-    // Gyro
-    private static final Pigeon2 gyro = new Pigeon2(consts.CANID.GYRO);
-
     // Controls
-    private static final MotorController leftMotorController = new PWMTalonFX(leftMotor.getDeviceID());
-    private static final MotorController rightMotorController = new PWMTalonFX(rightMotor.getDeviceID());
-    private static final MotionMagicVoltage leftMMRequest = new MotionMagicVoltage(0);
-    private static final MotionMagicVoltage rightMMRequest = new MotionMagicVoltage(0);
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
 
+    // Motor Controllers for DifferentialDrive
+    private static final MotorController leftMotorController = new TalonFXMotorController(leftMotor);
+    private static final MotorController rightMotorController = new TalonFXMotorController(rightMotor);
+    
     // Differential Drive
     private static final DifferentialDrive differentialDrive = new DifferentialDrive(leftMotorController, rightMotorController);
-
-    // Attitude Variables
-    private double currentHeading = 0.0; // Current heading of the robot in degrees. Initializes at 0 degrees.
-    private double targetHeading = 0.0; // Target heading for turning operations
-    private boolean isTurningInPlace = false; // Flag to track if we're currently turning in place
-    private double leftStartPosition = 0.0; // Starting position of left motor when turning begins
-    private double rightStartPosition = 0.0; // Starting position of right motor when turning begins
-    
-    // Field visualization
-    private final Field2d field = new Field2d();
-    private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
-        Rotation2d.fromDegrees(0),
-        0.0,
-        0.0
-    );
 
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
         
-        // Set up field visualization
-        SmartDashboard.putData("Field", field);
     }
 
     public void configureMotors() {
@@ -87,36 +97,24 @@ public class DriveSubsystem extends SubsystemBase {
             consts.PID.driveMotorPID.kA.get(),
             consts.PID.driveMotorPID.kG.get()
         );
-        MotionMagicConfigs leftMMConfigs = generateMotionMagicConfigs(
-            consts.MotionMagic.leftMotorMM.CRUISE_VELOCITY.get(),
-            consts.MotionMagic.leftMotorMM.ACCELERATION.get(),
-            consts.MotionMagic.leftMotorMM.JERK.get()
-        );
-        MotionMagicConfigs rightMMConfigs = generateMotionMagicConfigs(
-            consts.MotionMagic.rightMotorMM.CRUISE_VELOCITY.get(),
-            consts.MotionMagic.rightMotorMM.ACCELERATION.get(),
-            consts.MotionMagic.rightMotorMM.JERK.get()
-        );
-        TalonFXConfiguration leftTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs, leftMMConfigs);
-        TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(true, NeutralModeValue.Brake, slot0Configs, rightMMConfigs);
+        TalonFXConfiguration leftTalonFXConfig = generateTalonFXConfig(true, NeutralModeValue.Brake, slot0Configs);
+        TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
         leftMotor.getConfigurator().apply(leftTalonFXConfig);
         rightMotor.getConfigurator().apply(rightTalonFXConfig);
-        leftMotorFollower.setControl(new Follower(leftMotor.getDeviceID(), true));
-        rightMotorFollower.setControl(new Follower(rightMotor.getDeviceID(), true));
+        leftMotorFollower.setControl(new Follower(leftMotor.getDeviceID(), false));
+        rightMotorFollower.setControl(new Follower(rightMotor.getDeviceID(), false));
     }
 
     public TalonFXConfiguration generateTalonFXConfig (
         boolean inverted, 
         NeutralModeValue defaultNeutralMode, 
-        Slot0Configs slot0, 
-        MotionMagicConfigs motionMagicConfig
+        Slot0Configs slot0
         ) {
         TalonFXConfiguration talonFXConfig = new TalonFXConfiguration();
         talonFXConfig.MotorOutput.Inverted = inverted? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
         talonFXConfig.MotorOutput.NeutralMode = defaultNeutralMode;
 
         talonFXConfig.Slot0 = slot0;
-        talonFXConfig.MotionMagic = motionMagicConfig;
 
         return talonFXConfig;
     }
@@ -133,24 +131,30 @@ public class DriveSubsystem extends SubsystemBase {
         return slot0;
     }
 
-    public MotionMagicConfigs generateMotionMagicConfigs(
-        double cruiseVelocity, 
-        double acceleration, 
-        double jerk
-    ) {
-        MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
-        mmConfigs.MotionMagicCruiseVelocity = cruiseVelocity;
-        mmConfigs.MotionMagicAcceleration = acceleration;
-        mmConfigs.MotionMagicJerk = jerk;
-        return mmConfigs;
-    }
-
     public void arcadeDrive(double forward, double rotation) {
-        differentialDrive.arcadeDrive(forward * consts.Limits.MAX_OUTPUT, rotation * consts.Limits.MAX_OUTPUT);
+        // Apply deadband to prevent drift
+        forward = Math.abs(forward) < 0.05 ? 0.0 : forward;
+        rotation = Math.abs(rotation) < 0.05 ? 0.0 : rotation;
+        
+        // Apply speed limiting
+        forward = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, forward));
+        rotation = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, rotation));
+        
+        // Use DifferentialDrive
+        differentialDrive.arcadeDrive(forward, rotation);
     }
 
     public void tankDrive(double leftSpeed, double rightSpeed) {
-        differentialDrive.tankDrive(leftSpeed * consts.Limits.MAX_OUTPUT, rightSpeed * consts.Limits.MAX_OUTPUT);
+        // Apply deadband to prevent drift
+        leftSpeed = Math.abs(leftSpeed) < 0.05 ? 0.0 : leftSpeed;
+        rightSpeed = Math.abs(rightSpeed) < 0.05 ? 0.0 : rightSpeed;
+        
+        // Apply speed limiting
+        leftSpeed = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, leftSpeed));
+        rightSpeed = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, rightSpeed));
+        
+        // Use DifferentialDrive
+        differentialDrive.tankDrive(leftSpeed, rightSpeed);
     }
 
     public void setLeftMotorVelocity(double velocity) {
@@ -169,11 +173,19 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setLeftMotorPosition(double position) {
-        leftMotor.setControl(leftMMRequest.withPosition(position));
+        // Convert position to velocity for simple control
+        double currentPosition = leftMotor.getPosition().getValueAsDouble();
+        double positionError = position - currentPosition;
+        double velocity = positionError * 10.0; // Simple P control
+        leftMotor.setControl(velocityRequest.withVelocity(velocity));
     }
 
     public void setRightMotorPosition(double position) {
-        rightMotor.setControl(rightMMRequest.withPosition(position));
+        // Convert position to velocity for simple control
+        double currentPosition = rightMotor.getPosition().getValueAsDouble();
+        double positionError = position - currentPosition;
+        double velocity = positionError * 10.0; // Simple P control
+        rightMotor.setControl(velocityRequest.withVelocity(velocity));
     }
 
     public void setMotorPosition(double position) {
@@ -187,48 +199,25 @@ public class DriveSubsystem extends SubsystemBase {
         double rotations = distance * ROTATIONS_PER_METER;
         
         // Store starting positions
-        leftStartPosition = leftMotor.getPosition().getValueAsDouble();
-        rightStartPosition = rightMotor.getPosition().getValueAsDouble();
+        double leftStartPosition = leftMotor.getPosition().getValueAsDouble();
+        double rightStartPosition = rightMotor.getPosition().getValueAsDouble();
         
         // Set target positions for differential turning
         double leftTargetPosition = leftStartPosition + rotations;
         double rightTargetPosition = rightStartPosition - rotations;
         
-        // Set the target heading for logging
-        targetHeading = currentHeading + angle;
-        isTurningInPlace = true;
-        
-        // Normalize target heading to 0-360 degrees
-        while (targetHeading >= 360) {
-            targetHeading -= 360;
-        }
-        while (targetHeading < 0) {
-            targetHeading += 360;
-        }
-        
         // Set motor positions
         setLeftMotorPosition(leftTargetPosition);
         setRightMotorPosition(rightTargetPosition);
         
-        Logger.recordOutput("DriveSubsystem/TargetHeading", targetHeading);
-        Logger.recordOutput("DriveSubsystem/IsTurningInPlace", isTurningInPlace);
         Logger.recordOutput("DriveSubsystem/TurnAngle", angle);
         Logger.recordOutput("DriveSubsystem/TurnRotations", rotations);
     }
 
     public void turnToFace(double angle) {
-        // Calculate the difference between the current heading and the target angle.
-        double angleDifference = angle - currentHeading;
-        // Normalize the angle difference to be within -180 to 180 degrees.
-        if (angleDifference > 180) {
-            angleDifference -= 360;
-        } else if (angleDifference < -180) {
-            angleDifference += 360;
-        }
-        // Turn in place to face the target angle.
-        turnInPlace(angleDifference);
-        // Update the current heading to the target angle.
-        currentHeading = angle;
+        // Without gyro, we can only turn relative to current position
+        // This method now just turns the specified angle
+        turnInPlace(angle);
     }
 
     public void driveLeftDistance(double distance) {
@@ -275,65 +264,11 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void resetFacingAngle() {
-        currentHeading = 0.0;
-        targetHeading = 0.0;
-        isTurningInPlace = false;
+        // Without gyro, this method doesn't do anything meaningful
+        // Could be used to reset odometry if needed
+        Logger.recordOutput("DriveSubsystem/ResetFacingAngle", true);
     }
     
-    /**
-     * Handles PID control for turning in place
-     * This method should be called in the periodic() method
-     */
-    private void handleTurningInPlace() {
-        if (!isTurningInPlace) {
-            return;
-        }
-        
-        // Get current heading from gyro
-        currentHeading = gyro.getYaw().getValueAsDouble();
-        
-        // Calculate the shortest angle difference
-        double angleDifference = targetHeading - currentHeading;
-        
-        // Normalize to -180 to 180 degrees for shortest path
-        if (angleDifference > 180) {
-            angleDifference -= 360;
-        } else if (angleDifference < -180) {
-            angleDifference += 360;
-        }
-        
-        // Check if we've reached the target within tolerance
-        if (Math.abs(angleDifference) <= consts.PID.turnPID.tolerance.get()) {
-            stopMotors();
-            isTurningInPlace = false;
-            currentHeading = targetHeading;
-            Logger.recordOutput("DriveSubsystem/TurnComplete", true);
-            return;
-        }
-        
-        // Calculate PID output
-        double kP = consts.PID.turnPID.kP.get();
-        double kI = consts.PID.turnPID.kI.get();
-        double kD = consts.PID.turnPID.kD.get();
-        
-        // Simple PID calculation (you might want to add integral and derivative terms)
-        double output = angleDifference * kP;
-        
-        // Clamp output to reasonable limits
-        output = Math.max(-consts.Limits.MAX_OUTPUT, Math.min(consts.Limits.MAX_OUTPUT, output));
-        
-        // Apply differential drive (left motor forward, right motor backward for turning)
-        double leftSpeed = output;
-        double rightSpeed = -output;
-        
-        // Set motor speeds
-        leftMotor.setControl(velocityRequest.withVelocity(leftSpeed * 1000)); // Convert to RPM
-        rightMotor.setControl(velocityRequest.withVelocity(rightSpeed * 1000));
-        
-        Logger.recordOutput("DriveSubsystem/AngleDifference", angleDifference);
-        Logger.recordOutput("DriveSubsystem/TurnOutput", output);
-    }
-
     public void log() {
         // Left Motors
         // Master
@@ -358,7 +293,7 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Right/Master/Current", rightMotor.getStatorCurrent().getValue());
         Logger.recordOutput("Drive/Right/Master/Voltage", rightMotor.getSupplyVoltage().getValue());
 
-        // Follower
+        // // Follower
         Logger.recordOutput("Drive/Right/Follower/Position", rightMotorFollower.getPosition().getValue());
         Logger.recordOutput("Drive/Right/Follower/Velocity", rightMotorFollower.getVelocity().getValue());
         Logger.recordOutput("Drive/Right/Follower/Acceleration", rightMotorFollower.getAcceleration().getValue());
@@ -391,50 +326,18 @@ public class DriveSubsystem extends SubsystemBase {
         // Average wheel velocity for overall robot speed
         double averageWheelVelocityMPS = (leftWheelVelocityMPS + rightWheelVelocityMPS) / 2.0;
         Logger.recordOutput("Drive/Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
-        
-        // Also log to SmartDashboard for live viewing
-        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
-        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
-        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Left/Current", leftWheelCurrent);
-        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/Right/Current", rightWheelCurrent);
-        edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
 
-        // Gyro
-        Logger.recordOutput("Drive/Gyro/Yaw", gyro.getYaw().getValue());
-        Logger.recordOutput("Drive/Gyro/Pitch", gyro.getPitch().getValue());
-        Logger.recordOutput("Drive/Gyro/Roll", gyro.getRoll().getValue());
-        Logger.recordOutput("Drive/CurrentHeading", currentHeading);
-        Logger.recordOutput("Drive/TargetHeading", targetHeading);
-        Logger.recordOutput("Drive/IsTurningInPlace", isTurningInPlace);
+        
     }
 
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
         checkAndUpdatePID();
-        handleTurningInPlace(); // Handle PID-controlled turning
-        
-        // Update odometry and field visualization
-        updateOdometry();
         
         log();
     }
     
-    private void updateOdometry() {
-        // Get wheel positions in meters
-        double leftDistance = leftMotor.getPosition().getValueAsDouble() * METERS_PER_ROTATION;
-        double rightDistance = rightMotor.getPosition().getValueAsDouble() * METERS_PER_ROTATION;
-        
-        // Get gyro rotation
-        Rotation2d gyroRotation = Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble());
-        
-        // Update odometry
-        odometry.update(gyroRotation, leftDistance, rightDistance);
-        
-        // Update field visualization
-        field.setRobotPose(odometry.getPoseMeters());
-    }
-
     private void checkAndUpdatePID() {
         // Check if any PID values have changed
         boolean pidChanged = consts.PID.driveMotorPID.kP.hasChanged() ||
@@ -445,16 +348,8 @@ public class DriveSubsystem extends SubsystemBase {
                            consts.PID.driveMotorPID.kA.hasChanged() ||
                            consts.PID.driveMotorPID.kG.hasChanged();
 
-        // Check if Motion Magic values have changed
-        boolean mmChanged = consts.MotionMagic.leftMotorMM.CRUISE_VELOCITY.hasChanged() ||
-                          consts.MotionMagic.leftMotorMM.ACCELERATION.hasChanged() ||
-                          consts.MotionMagic.leftMotorMM.JERK.hasChanged() ||
-                          consts.MotionMagic.rightMotorMM.CRUISE_VELOCITY.hasChanged() ||
-                          consts.MotionMagic.rightMotorMM.ACCELERATION.hasChanged() ||
-                          consts.MotionMagic.rightMotorMM.JERK.hasChanged();
-
         // If any values changed, reconfigure the motors
-        if (pidChanged || mmChanged) {
+        if (pidChanged) {
             Logger.recordOutput("Drive/PID/Reconfiguring", true);
             configureMotors();
             Logger.recordOutput("Drive/PID/kP", consts.PID.driveMotorPID.kP.get());
