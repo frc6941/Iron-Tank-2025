@@ -50,36 +50,38 @@ public class RobotContainer {
     // Intake Controls
     // Y button - Set current position as zero
     mainController.y().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== Y BUTTON PRESSED - Setting zero position ===");
       intakeSubsystem.setZeroPosition();
     }));
 
-    // B button - Home (first press) or Intake (second press when at zero)
+    // B button - Move pivot back to zero position
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
-      if (intakeSubsystem.isAtZero()) {
-        // Second B press - start intake
-        intakeSubsystem.startIntake();
-      } else {
-        // First B press - go to home
-        intakeSubsystem.goToHome();
-      }
+      System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
+      intakeSubsystem.goToZero();
     }));
 
-    // Left shoulder button - Hold (stop roller) and Elevate (move pivot upward after 1 second)
-    mainController.leftBumper().onTrue(
-      intakeSubsystem.runOnce(() -> intakeSubsystem.hold())
-      .andThen(new WaitCommand(1.0))
-      .andThen(intakeSubsystem.runOnce(() -> intakeSubsystem.elevate()))
-    );
+    // Left Bumper (LB) - Elevate pivot
+    mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
+      intakeSubsystem.elevate();
+    }));
 
-    // Right shoulder button - Eject (first press) or Stop Eject (second press)
+    // Right Bumper (RB) - Intake clockwise
     mainController.rightBumper().onTrue(intakeSubsystem.runOnce(() -> {
-      if (intakeSubsystem.getRollerState().equals("Ejecting")) {
-        // Second right shoulder press - stop eject
-        intakeSubsystem.stopEject();
-      } else {
-        // First right shoulder press - start eject
-        intakeSubsystem.startEject();
-      }
+      System.out.println("=== RIGHT BUMPER PRESSED - Starting intake (clockwise) ===");
+      intakeSubsystem.startIntake();
+    }));
+
+    // Left Trigger (LT) - Eject counterclockwise
+    mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== LEFT TRIGGER PRESSED - Starting eject (counterclockwise) ===");
+      intakeSubsystem.startEject();
+    }));
+
+    // Right Trigger (RT) - Stop roller
+    mainController.rightTrigger().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== RIGHT TRIGGER PRESSED - Stopping roller ===");
+      intakeSubsystem.stopRoller();
     }));
   }
 
