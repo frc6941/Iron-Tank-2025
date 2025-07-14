@@ -18,8 +18,8 @@ public class consts {
         public static final int MOTOR_RIGHT_FOLLOWER = 3;
 
         // Intake Motors
-        public static final int PIVOTMOTOR = 5; 
-        public static final int ROLLERMOTOR = 6; 
+        public static final int MOTOR_PIVOT = 5; 
+        public static final int MOTOR_ROLLER = 6; 
     }
 
     /* =============================== |
