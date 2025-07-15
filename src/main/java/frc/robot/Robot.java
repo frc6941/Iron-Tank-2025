@@ -5,9 +5,15 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.DriveSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -30,7 +36,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
     CameraServer.startAutomaticCapture();
-    
+
   }
 
   /**
@@ -47,6 +53,14 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    NetworkTable table = inst.getTable("AdvantageScope");
+    NetworkTable cameraTable = table.getSubTable("myCamera");
+    Pose3d cameraPose = new Pose3d(
+      new Translation3d(0.2, 0.0, 0.5),
+      new Rotation3d(0, Math.toRadians(-20),0)
+    );
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

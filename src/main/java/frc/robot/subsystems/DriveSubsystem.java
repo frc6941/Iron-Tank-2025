@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import org.frcteam2910.common.robot.drivers.Pigeon;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -11,8 +12,14 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.controllers.PPLTVController;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -49,13 +56,52 @@ public class DriveSubsystem extends SubsystemBase {
 
 
     // Gyro (Pigeon 1.0)
-    private Pigeon gyro = new Pigeon(0);
+    public PigeonIMU gyro = new PigeonIMU(0);
+
+    double yaw = gyro.getYaw();
+
+    public void resetGyro() {
+        if (gyro != null) {
+            gyro.setYaw(0);
+        }
+    }
+
+    
 
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
 
-        
+        RobotConfig config;
+        try{
+        config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+        // Handle exception as needed
+        e.printStackTrace();
+        }
+
+        // Configure AutoBuilder last
+    //     AutoBuilder.configure(
+    //         this::getPose, // Robot pose supplier
+    //         this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+    //         this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+    //         (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+    //         new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
+    //         config, // The robot configuration
+    //         () -> {
+    //           // Boolean supplier that controls when the path will be mirrored for the red alliance
+    //           // This will flip the path being followed to the red side of the field.
+    //           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+    //           var alliance = DriverStation.getAlliance();
+    //           if (alliance.isPresent()) {
+    //             return alliance.get() == DriverStation.Alliance.Red;
+    //           }
+    //           return false;
+    //         },
+    //         this // Reference to this subsystem to set requirements
+    // );
+
         
     }
 
