@@ -12,10 +12,10 @@ public class consts {
      * ============================== */
     public static final class CANID {
         // Chassis Motors
-        public static final int LEFTMOTOR = 4;
-        public static final int LEFTMOTORFOLLEWER = 2;
-        public static final int RIGHTMOTOR = 1;
-        public static final int RIGHTMOTORFOLLOWER = 3;
+        public static final int MOTOR_LEFT = 4;
+        public static final int MOTOR_LEFT_FOLLEWER = 2;
+        public static final int MOTOR_RIGHT = 1;
+        public static final int MOTOR_RIGHT_FOLLOWER = 3;
 
         // Intake Motors
         public static final int PIVOTMOTOR = 5; 
@@ -102,6 +102,20 @@ public class consts {
             public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Ampere
             public static final double ROLLER_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
             public static final double ROLLER_INTAKE_SPEED = 30.0; // Roller speed in rotations per second
+        }
+    }
+
+    /* =============================== |
+     *             Controls            |
+     * ============================== */
+    public static final class Controls {
+        public static final class Intake {
+            // Has Coral Amperes
+            // Copied from frc6941/2025-Competition-Robot, use with caution
+            public static final TunableNumber ROLLER_AMPS_HAS_CORAL = new TunableNumber("roller_amps_has_coral", 55.0); 
+
+            // Intake roller voltage
+            public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("intake_voltage", 12.0); // Voltage in Volts
         }
     }
 

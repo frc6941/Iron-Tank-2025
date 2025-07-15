@@ -21,6 +21,7 @@ import frc.robot.consts;
 public class IntakeSubsystem extends SubsystemBase {
 
     // Motors
+
     private final TalonFX pivotMotor = new TalonFX(consts.CANID.PIVOTMOTOR);
     private final TalonFX rollerMotor = new TalonFX(consts.CANID.ROLLERMOTOR);
     private final CANcoder pivotEncoder = new CANcoder(consts.CANID.PIVOTENCODER);
