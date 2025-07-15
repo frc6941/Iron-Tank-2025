@@ -46,6 +46,12 @@ public class ClimberSubsystem extends SubsystemBase {
         climberMotor.setControl(dutyCycleRequest.withOutput(0.0));
     }
 
+
+
+    // Climber Camera
+
+    
+
     @Override
     public void periodic() {
         Logger.recordOutput("Climber/Position", climberMotor.getPosition().getValue());

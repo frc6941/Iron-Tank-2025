@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import org.frcteam2910.common.robot.drivers.Pigeon;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -46,9 +47,16 @@ public class DriveSubsystem extends SubsystemBase {
 
     public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
 
+
+    // Gyro (Pigeon 1.0)
+    private Pigeon gyro = new Pigeon(0);
+
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
+
+        gyro.getPigeonIMU();
+        resetGyro(0.0);
         
     }
 

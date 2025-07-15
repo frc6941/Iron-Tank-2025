@@ -24,6 +24,9 @@ public class consts {
 
         // Climber CAN ID and PID
         public static final int CLIMBER_MOTOR = 7; // Update to your actual CAN ID
+
+        // Gyro (Pigeon 1.0)
+        public static final int GYRO = 0;
     }
 
     /* =============================== |
