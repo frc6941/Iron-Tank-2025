@@ -16,9 +16,6 @@ public class RobotContainer {
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
 
-  // State variable to track if intake is in eject position
-  private boolean isInEjectPosition = false;
-
   public RobotContainer() {
     configureBindings();
   }
@@ -49,20 +46,18 @@ public class RobotContainer {
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
       intakeSubsystem.goToZero();
-      isInEjectPosition = false;
     }));
 
     // Left Bumper (LB) - Elevate pivot
     mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
       intakeSubsystem.elevate();
-      isInEjectPosition = false;
     }));
 
     // Left Trigger (LT) - Elevate pivot
     mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== LT PRESSED - Elevating pivot ===");
-      intakeSubsystem.elevate();
+      intakeSubsystem.goToEjectPosition();
     }));
 
     // Right Trigger (RT) - Eject while held

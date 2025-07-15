@@ -186,13 +186,15 @@ public class DriveSubsystem extends SubsystemBase {
         double leftPwm, rightPwm;
 
         if (isQuickTurn) {
-            leftPwm = wheel;
-            rightPwm = -wheel;
+            // SWAPPED: Fix left/right reversal
+            leftPwm = -wheel;
+            rightPwm = wheel;
         } else {
             double overPower;
             double angularPower = Math.abs(throttle) * wheel;
-            leftPwm = throttle + angularPower;
-            rightPwm = throttle - angularPower;
+            // SWAPPED: Fix left/right reversal
+            leftPwm = throttle - angularPower;
+            rightPwm = throttle + angularPower;
 
             if (leftPwm > 1.0) {
                 overPower = leftPwm - 1.0;

@@ -112,9 +112,9 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void startEject() {
         System.out.println("IntakeSubsystem: startEject() called");
-        double speed = consts.INTAKE_ROLLER_SPEED.get() + 20.0;
-        System.out.println("IntakeSubsystem: Starting eject with speed: " + speed);
-        rollerMotor.setControl(velocityRequest.withVelocity(speed));
+        double power = consts.INTAKE_ROLLER_POWER.get();
+        System.out.println("IntakeSubsystem: Starting eject with power: " + power);
+        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isEjecting = true;
         isIntaking = false;
         System.out.println("IntakeSubsystem: Eject started successfully");
@@ -135,9 +135,9 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void startIntake() {
         System.out.println("IntakeSubsystem: startIntake() called");
-        double speed = -consts.INTAKE_ROLLER_SPEED.get();
-        System.out.println("IntakeSubsystem: Starting intake with speed: " + speed);
-        rollerMotor.setControl(velocityRequest.withVelocity(speed));
+        double power = -consts.INTAKE_ROLLER_POWER.get();
+        System.out.println("IntakeSubsystem: Starting intake with power: " + power);
+        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isIntaking = true;
         isEjecting = false;
         System.out.println("IntakeSubsystem: Intake started successfully");
@@ -301,7 +301,7 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Roller/IsEjecting", isEjecting);
 
         // Tunable constants logging
-        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_SPEED.get());
+        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_POWER.get());
         Logger.recordOutput("Intake/Constants/HoldOffset", consts.INTAKE_HOLD_OFFSET.get());
         Logger.recordOutput("Intake/Constants/ElevatedPosition", consts.INTAKE_ELEVATED_POSITION.get());
         Logger.recordOutput("Intake/Constants/PositionTolerance", consts.INTAKE_POSITION_TOLERANCE.get());
