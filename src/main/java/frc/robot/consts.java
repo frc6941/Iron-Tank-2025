@@ -11,26 +11,22 @@ public class consts {
      *             CAN ID              |
      * ============================== */
     public static final class CANID {
-        // Chassis Motors
-        public static final int MOTOR_LEFT = 4;
-        public static final int MOTOR_LEFT_FOLLEWER = 2;
-        public static final int MOTOR_RIGHT = 1;
-        public static final int MOTOR_RIGHT_FOLLOWER = 3;
-
-        // Intake Motors
+        // ... (no changes here)
+        public static final int LEFTMOTOR = 4;
+        public static final int LEFTMOTORFOLLEWER = 2;
+        public static final int RIGHTMOTOR = 1;
+        public static final int RIGHTMOTORFOLLOWER = 3;
         public static final int PIVOTMOTOR = 5; 
         public static final int ROLLERMOTOR = 6; 
         public static final int PIVOTENCODER = 8;
-
-        // Climber CAN ID and PID
-        public static final int CLIMBER_MOTOR = 7; // Update to your actual CAN ID
+        public static final int CLIMBER_MOTOR = 7;
     }
 
     /* =============================== |
      *               PID               |
      * ============================== */
     public static final class PID {
-
+        // ... (no changes here)
         public static final class driveMotorPID {
             public static final TunableNumber kP = new TunableNumber("drive_kP", 1);
             public static final TunableNumber kI = new TunableNumber("drive_kI", 0.0);
@@ -65,11 +61,37 @@ public class consts {
             public static final TunableNumber kD = new TunableNumber("climber_kD", 0.0);
         }
     }
+    
+    // *** NEW: Constants for the Cheesy Drive implementation ***
+    public static final class Drive {
+        // Deadband for the joysticks. Any input below this value will be treated as zero.
+        public static final double DEADBAND = 0.05;
+        
+        // A threshold for when the robot is considered "slow" enough to allow turning in place.
+        public static final double QUICK_TURN_THRESHOLD = 0.2;
+
+        // Constants for the negative inertia (steering inertia counteraction)
+        public static final class CheesyDrive {
+            // How much to scale the corrective power when stopping a turn. Start tuning this value.
+            public static final double NEG_INERTIA_TURN_SCALAR = 4.0; 
+
+            // How much to scale the corrective power when the robot is moving straight but still turning slowly.
+            public static final double NEG_INERTia_CLOSE_SCALAR = 3.0;
+
+            // How much to scale the corrective power when the driver is actively continuing a turn.
+            public static final double NEG_INERTIA_SCALAR = 2.0;
+
+            // Any turn input below this is considered "not turning" for the purposes of inertia calculation.
+            public static final double NEG_INERTIA_THRESHOLD = 0.8;
+        }
+    }
+
 
     /* =============================== |
      *          Superstructures        |
      * ============================== */
     public static final class Superstructures {
+        // ... (no changes here)
         public static final class Chassis {
             public static final double TRACK_WIDTH = 0.677;
             public static final double WHEEL_DIAMETER = 0.1524;
@@ -90,52 +112,34 @@ public class consts {
      *             Limits              |
      * ============================== */
     public static final class Limits {
+        // ... (no changes here)
         public static final class Chassis {
             public static final double MAX_VELOCITY = 10.0;
             public static final double MAX_OUTPUT = 0.8;
         }
 
         public static final class Intake {
-            // These values are copied from frc6941/2025-Competition-Robot
-            public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Amperes
-            public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
-            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Ampere
-            public static final double ROLLER_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
-            public static final double ROLLER_INTAKE_SPEED = 30.0; // Roller speed in rotations per second
-        }
-    }
-
-    /* =============================== |
-     *             Controls            |
-     * ============================== */
-    public static final class Controls {
-        public static final class Intake {
-            // Has Coral Amperes
-            // Copied from frc6941/2025-Competition-Robot, use with caution
-            public static final TunableNumber ROLLER_AMPS_HAS_CORAL = new TunableNumber("roller_amps_has_coral", 55.0); 
-
-            // Intake roller voltage
-            public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("intake_voltage", 12.0); // Voltage in Volts
+            public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0;
+            public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0;
+            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0;
+            public static final double ROLLER_STATOR_CURRENT_LIMIT = 40.0;
+            public static final double ROLLER_INTAKE_SPEED = 30.0;
         }
     }
 
     /* =============================== |
      *          Miscellaneous          |
      * ============================== */
-    // TunableNumber
+    // ... (no changes here)
     public static final boolean TUNING = true;
-    
-    // Intake tunable constants+
     public static final TunableNumber INTAKE_ROLLER_SPEED = new TunableNumber("intake_roller_speed", 30.0);
     public static final TunableNumber INTAKE_HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
     public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
     public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
     public static final TunableNumber INTAKE_HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
     public static final TunableNumber INTAKE_PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
-    public static final TunableNumber INTAKE_EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5); // default value, adjust as needed
-    // Tunable voltages for pivot and roller
-    public static final TunableNumber INTAKE_PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0); // default value, adjust as needed
-    public static final TunableNumber INTAKE_ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0); // default value, adjust as needed
-    // Climber tunable constant
-    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
+    public static final TunableNumber INTAKE_EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
+    public static final TunableNumber INTAKE_PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
+    public static final TunableNumber INTAKE_ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
+    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0);
 }

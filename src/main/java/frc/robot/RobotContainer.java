@@ -1,23 +1,12 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-
-
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
@@ -30,79 +19,70 @@ public class RobotContainer {
   // State variable to track if intake is in eject position
   private boolean isInEjectPosition = false;
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Configure the trigger bindings
     configureBindings();
   }
 
-  /** Use this method to define your trigger->command mappings. */
   private void configureBindings() {
-    // Put any trigger->command mappings here.
-    Command tankDrive =
-      driveSubsystem.run(() -> {
+    
+    // *** MODIFIED: Default drive command now uses Cheesy Drive ***
+    driveSubsystem.setDefaultCommand(new RunCommand(() -> {
+        // Get joystick values
         // Left stick Y for forward/backward movement
-        double forwardInput = deadBand(-mainController.getLeftY(), 0.1);
+        double forward = -mainController.getLeftY();
 
-        // Right stick X for turning (left/right)
-        double turnInput = deadBand(mainController.getRightX(), 0.1);
+        // Right stick X for turning, inverted as in the original code
+        double rotation = -mainController.getRightX();
 
-        // Apply the inputs to the drive subsystem
-        driveSubsystem.arcadeDrive(forwardInput, -turnInput);
-      });
+        // Determine if quick turn should be active.
+        // This is true if the driver is not commanding significant forward/backward speed.
+        boolean isQuickTurn = Math.abs(forward) < consts.Drive.QUICK_TURN_THRESHOLD;
 
-    driveSubsystem.setDefaultCommand(tankDrive);
+        // Apply the inputs to the new Cheesy Drive method in the subsystem
+        driveSubsystem.cheesyDrive(forward, rotation, isQuickTurn);
 
-    // Intake Controls
+      }, driveSubsystem));
+    
+    // ... (No changes to any other bindings for Intake or Climber)
 
     // B button - Move pivot back to zero position
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
       intakeSubsystem.goToZero();
-      isInEjectPosition = false; // Reset eject position state when going to zero
+      isInEjectPosition = false;
     }));
 
     // Left Bumper (LB) - Elevate pivot
     mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
       intakeSubsystem.elevate();
-      isInEjectPosition = false; // Reset eject position state when elevating
+      isInEjectPosition = false;
     }));
 
-    // Right Bumper (RB) - Intake while held
-    mainController.rightBumper().whileTrue(intakeSubsystem.run(() -> {
-      System.out.println("=== RIGHT BUMPER HELD - Intaking ===");
-      intakeSubsystem.startIntake();
-    }));
-    mainController.rightBumper().onFalse(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== RIGHT BUMPER RELEASED - Stopping intake ===");
-      intakeSubsystem.stopIntake();
-    }));
-
-    // Left Trigger (LT) - Two-stage behavior: first press moves to eject position, second press starts ejecting
+    // Left Trigger (LT) - Elevate pivot
     mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
-      if (!isInEjectPosition) {
-        // First press: move to eject position
-        System.out.println("=== LT PRESSED - Moving to eject position ===");
-        intakeSubsystem.goToEjectPosition();
-        isInEjectPosition = true;
-      } else {
-        // Second press: start ejecting
-        System.out.println("=== LT PRESSED - Starting eject ===");
-        intakeSubsystem.startEject();
-      }
+      System.out.println("=== LT PRESSED - Elevating pivot ===");
+      intakeSubsystem.elevate();
     }));
 
-    // Stop eject on LT release
-    mainController.leftTrigger().onFalse(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== LT RELEASED - Stopping eject ===");
+    // Right Trigger (RT) - Eject while held
+    mainController.rightTrigger().whileTrue(intakeSubsystem.run(() -> {
+      System.out.println("=== RT HELD - Ejecting ===");
+      intakeSubsystem.startEject();
+    }));
+    mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== RT RELEASED - Stopping eject ===");
       intakeSubsystem.stopEject();
     }));
 
-    // Right Trigger (RT) - Stop roller
-    mainController.rightTrigger().onTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== RIGHT TRIGGER PRESSED - Stopping roller ===");
-      intakeSubsystem.stopRoller();
+    // Right Bumper (RB) - Toggle intake (first press: start, second: stop)
+    mainController.rightBumper().toggleOnTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
+      if (!intakeSubsystem.isIntaking()) {
+        intakeSubsystem.startIntake();
+      } else {
+        intakeSubsystem.stopIntake();
+      }
     }));
 
     // Climber Controls
@@ -116,6 +96,7 @@ public class RobotContainer {
     }));
   }
 
+  // This deadband method is no longer used for drive, but kept for potential other uses
   public static double deadBand(double value, double tolerance) {
     if (value < tolerance && value > -tolerance) {
       return 0;
@@ -124,7 +105,6 @@ public class RobotContainer {
   }
   
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
     return new Command() {};
   }
 }

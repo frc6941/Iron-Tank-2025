@@ -221,6 +221,13 @@ public class IntakeSubsystem extends SubsystemBase {
         return isHolding;
     }
 
+    /**
+     * Returns whether the roller is currently intaking
+     */
+    public boolean isIntaking() {
+        return isIntaking;
+    }
+
     public void goToEjectPosition() {
         System.out.println("IntakeSubsystem: goToEjectPosition() called");
         // Move pivot counterclockwise to eject position (negative value = counterclockwise)
