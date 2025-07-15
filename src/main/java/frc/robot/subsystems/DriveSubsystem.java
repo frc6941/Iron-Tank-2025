@@ -55,8 +55,7 @@ public class DriveSubsystem extends SubsystemBase {
         // Configure the motors
         configureMotors();
 
-        gyro.getPigeonIMU();
-        resetGyro(0.0);
+        
         
     }
 
