@@ -20,12 +20,17 @@ public class consts {
         // Intake Motors
         public static final int PIVOTMOTOR = 5; 
         public static final int ROLLERMOTOR = 6; 
+        public static final int PIVOTENCODER = 8;
+
+        // Climber CAN ID and PID
+        public static final int CLIMBER_MOTOR = 7; // Update to your actual CAN ID
     }
 
     /* =============================== |
      *               PID               |
      * ============================== */
     public static final class PID {
+
         public static final class driveMotorPID {
             public static final TunableNumber kP = new TunableNumber("drive_kP", 1);
             public static final TunableNumber kI = new TunableNumber("drive_kI", 0.0);
@@ -45,14 +50,19 @@ public class consts {
             public static final TunableNumber kG = new TunableNumber("position_kG", 0.0);
         }
         public static final class pivotPID {
-            public static final TunableNumber kP = new TunableNumber("pivot_kP", 1);
-            public static final TunableNumber kI = new TunableNumber("pivot_kI", 0.0);
-            public static final TunableNumber kD = new TunableNumber("pivot_kD", 0.0);
+            public static final TunableNumber kP = new TunableNumber("pivot_kP", 4);
+            public static final TunableNumber kI = new TunableNumber("pivot_kI", 0.2);
+            public static final TunableNumber kD = new TunableNumber("pivot_kD", 0.1);
         }
         public static final class rollerPID {
-            public static final TunableNumber kP = new TunableNumber("roller_kP", 1);
+            public static final TunableNumber kP = new TunableNumber("roller_kP", 3);
             public static final TunableNumber kI = new TunableNumber("roller_kI", 0.0);
             public static final TunableNumber kD = new TunableNumber("roller_kD", 0.0);
+        }
+        public static final class climberPID {
+            public static final TunableNumber kP = new TunableNumber("climber_kP", 1.0);
+            public static final TunableNumber kI = new TunableNumber("climber_kI", 0.0);
+            public static final TunableNumber kD = new TunableNumber("climber_kD", 0.0);
         }
     }
 
@@ -63,7 +73,7 @@ public class consts {
         public static final class Chassis {
             public static final double TRACK_WIDTH = 0.677;
             public static final double WHEEL_DIAMETER = 0.1524;
-            public static final double GEAR_RATIO = 8.46; // Motor rotations per wheel rotation TODO: Update to real value
+            public static final double GEAR_RATIO = 8.45; // Motor rotations per wheel rotation 
         }
 
         public static final class Intake {
@@ -89,9 +99,9 @@ public class consts {
             // These values are copied from frc6941/2025-Competition-Robot
             public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Amperes
             public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
-            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Amperes
+            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0; // Supply current limit in Ampere
             public static final double ROLLER_STATOR_CURRENT_LIMIT = 40.0; // Stator current limit in Amperes
-            public static final double ROLLER_INTAKE_SPEED = 20.0; // Roller speed in rotations per second
+            public static final double ROLLER_INTAKE_SPEED = 30.0; // Roller speed in rotations per second
         }
     }
 
@@ -101,11 +111,17 @@ public class consts {
     // TunableNumber
     public static final boolean TUNING = true;
     
-    // Intake tunable constants
-    public static final TunableNumber INTAKE_ROLLER_SPEED = new TunableNumber("intake_roller_speed", 20.0);
+    // Intake tunable constants+
+    public static final TunableNumber INTAKE_ROLLER_SPEED = new TunableNumber("intake_roller_speed", 30.0);
     public static final TunableNumber INTAKE_HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
-    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 8);
+    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
     public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
     public static final TunableNumber INTAKE_HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
     public static final TunableNumber INTAKE_PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
+    public static final TunableNumber INTAKE_EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5); // default value, adjust as needed
+    // Tunable voltages for pivot and roller
+    public static final TunableNumber INTAKE_PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0); // default value, adjust as needed
+    public static final TunableNumber INTAKE_ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0); // default value, adjust as needed
+    // Climber tunable constant
+    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
 }

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
+import frc.robot.utils.TunableNumber;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -43,6 +44,8 @@ public class DriveSubsystem extends SubsystemBase {
     // Differential Drive
     private static final DifferentialDrive differentialDrive = new DifferentialDrive(leftMotorController, rightMotorController);
 
+    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
+
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
@@ -59,7 +62,7 @@ public class DriveSubsystem extends SubsystemBase {
         
         @Override
         public void set(double speed) {
-            motor.setControl(new VelocityVoltage(speed));
+            motor.setControl(new DutyCycleOut(speed));
         }
         
         @Override
@@ -103,6 +106,8 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
         leftMotor.getConfigurator().apply(leftTalonFXConfig);
         rightMotor.getConfigurator().apply(rightTalonFXConfig);
+        leftMotorFollower.getConfigurator().apply(leftTalonFXConfig);
+        rightMotorFollower.getConfigurator().apply(rightTalonFXConfig);
         leftMotorFollower.setControl(new Follower(leftMotor.getDeviceID(), false));
         rightMotorFollower.setControl(new Follower(rightMotor.getDeviceID(), false));
     }
