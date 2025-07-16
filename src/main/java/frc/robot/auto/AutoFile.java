@@ -14,28 +14,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class AutoFile {
-    private final AutoActions autoActions;
+    private final AutoActions autoActions = new AutoActions();
     private final Map<String, PathPlannerPath> autoPaths = new HashMap<>();
     
-    public AutoFile(AutoActions autoActions) {
-        this.autoActions = autoActions;
-        initializeAutoPaths();
-    }
-
-    private void initializeAutoPaths() {
-        File[] files = new File(Filesystem.getDeployDirectory(), "pathplanner/paths").listFiles();
-        assert files != null;
-        for (File file : files) {
-            try {
-                // path files without extension
-                PathPlannerPath path = PathPlannerPath.fromPathFile(file.getName());
-                autoPaths.put(path.name, path);
-            } catch (IOException | ParseException e) {
-                throw new IllegalArgumentException("Failed to parse path file: " + file.getName(), e);
-            }
-        }
-    }
-
     private PathPlannerPath getAutoPath(String path) {
         assert autoPaths.containsKey(path);
         return autoPaths.get(path);
@@ -52,19 +33,19 @@ public class AutoFile {
 
     private Command build1CoralLeft() {
         return new SequentialCommandGroup(
-                autoActions.followPath(getAutoPath("Left"), true, true, false),
+                autoActions.followPath("Left"),
                 autoActions.shootCoral()
         );
     }
     private Command build1CoralMid() {
         return new SequentialCommandGroup(
-                autoActions.followPath(getAutoPath("Mid"), true, true, false),
+                autoActions.followPath("Mid"),
                 autoActions.shootCoral()
         );
     }
     private Command build1CoralRight() {
         return new SequentialCommandGroup(
-                autoActions.followPath(getAutoPath("Right"), true, true, false),
+                autoActions.followPath("Right"),
                 autoActions.shootCoral()
         );
     }

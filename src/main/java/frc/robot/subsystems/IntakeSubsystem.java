@@ -48,7 +48,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public static enum CurrentState {INTAKING, EJECTING, HOLDING, ELEVATING, ZEROING, IDLE}
     public static enum WantedState {INTAKE, EJECT, HOLD, ELEVATE, ZERO}
     public static enum IntakePosition {ZERO, HOLD, ELEVATE}
-    private CurrentState currentState = CurrentState.IDLE; // Current state of the intake subsystem
+    public CurrentState currentState = CurrentState.IDLE; // Current state of the intake subsystem
     private WantedState wantedState = WantedState.ZERO; // Desired state of the intake subsystem
     private IntakePosition intakePosition = IntakePosition.ZERO; // Current position of the intake subsystem
     private Vector<WantedState> scheduledTasks = new Vector<WantedState>(); // Scheduled tasks for the intake subsystem
@@ -210,7 +210,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean isShootFinished() {
-        if (stopEject()) {
+        if (currentState == CurrentState.IDLE) { // Replace 'false' with the appropriate condition
             return true;
         } else {
             return false;

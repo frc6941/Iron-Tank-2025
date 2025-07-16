@@ -98,39 +98,20 @@ public class DriveSubsystem extends SubsystemBase {
         );
 
     }
-    // Assuming this is a method in your drive subsystem
+    
     public Command followPathCommand(String pathName) {
-        try{
-        PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-
-        return new FollowPathCommand(
-                path,
-                this::getPose, // Robot pose supplier
-                this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                this::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds, AND feedforwards
-                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-                ),
-                autoConfig, // The robot configuration
-                () -> {
-                  // Boolean supplier that controls when the path will be mirrored for the red alliance
-                  // This will flip the path being followed to the red side of the field.
-                  // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-                  var alliance = DriverStation.getAlliance();
-                  if (alliance.isPresent()) {
-                    return alliance.get() == DriverStation.Alliance.Red;
-                  }
-                  return false;
-                },
-                this // Reference to this subsystem to set requirements
-        );
-    } catch (Exception e) {
-        DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-        return Commands.none();
+        try {
+            // Load path from PathPlanner
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+            
+            // Create the command to follow the path
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Error loading path: " + e.getMessage(), e.getStackTrace());
+            return Commands.none();
+        }
     }
-  }
+    
 
     // Custom motor controller class to wrap TalonFX for DifferentialDrive
     private static class TalonFXMotorController implements MotorController {
