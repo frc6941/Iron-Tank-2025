@@ -23,8 +23,6 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.consts;
 import frc.robot.consts.Limits.Intake;
 
-// TODO: Auto Intake Auto Eject based on current
-
 /*
  * Positions
  * ZERO:        |
