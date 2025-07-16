@@ -210,7 +210,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean isShootFinished() {
-        if (currentState == CurrentState.IDLE) { // Replace 'false' with the appropriate condition
+        if (currentState == CurrentState.IDLE) { 
             return true;
         } else {
             return false;
