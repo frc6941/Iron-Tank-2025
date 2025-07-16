@@ -18,6 +18,7 @@ import com.pathplanner.lib.controllers.PPLTVController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -94,7 +95,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-
+        
     }
 
     // Custom motor controller class to wrap TalonFX for DifferentialDrive
@@ -256,7 +257,9 @@ public class DriveSubsystem extends SubsystemBase {
                 rightPwm = -1.0;
             }
 
-            DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), , null)
+            DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getRotation2d(),
+            leftMotor.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION, 
+            rightMotor.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION);
         }
 
         // Use tankDrive to set the final motor outputs.
