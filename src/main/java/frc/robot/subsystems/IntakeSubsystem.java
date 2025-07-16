@@ -17,6 +17,9 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -236,7 +239,7 @@ public class IntakeSubsystem extends SubsystemBase {
         System.out.println("IntakeSubsystem: Moving counterclockwise to eject position: " + targetPosition);
         System.out.println("IntakeSubsystem: Eject target set - position control active");
     }
-
+    // Removed getAutonomousCommand() from IntakeSubsystem. Autonomous logic belongs in RobotContainer.
     private void updatePID() {
         // Check if any PID values have changed
         boolean pivotPIDChanged = consts.PID.pivotPID.kP.hasChanged() || consts.PID.pivotPID.kI.hasChanged() || consts.PID.pivotPID.kD.hasChanged();
@@ -276,7 +279,6 @@ public class IntakeSubsystem extends SubsystemBase {
             }
         }
     }
-
     public void log() {
         // Pivot motor logging
         Logger.recordOutput("Intake/Pivot/Position", pivotMotor.getPosition().getValue());
