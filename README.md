@@ -27,20 +27,27 @@ This is the first beta release of the control software built for Sanya off-seaso
 This version of code includes three subsystem, designed to control the robot's driving, intake, and climber.
 The robot should be able to move to desired position, 
 ### Key Features
+
 **1. Robot Framework (WPILib Command-Based)**
 The robot code leverages WPILib’s command-based structure:
 - Main robot lifecycle managed by Robot.java using TimedRobot.
 - We uses RobotContainer for initialization and command scheduling.
+
 **2. Drive Subsystem**
 - This subsystem implements all core drivetrain functionality for the robot.
 - The robot is controlled by selected buttons on an Xbox controller or 'joystick'.
-- Currently only supports teleoperated or manual driving
+- Currently only supports teleoperated or manual driving.
+
 **3. Intake Subsystem**
 - This subsystem uses CTRE Pheonix 6 for motor and encoder control, and AdvantageKit's Logger for telemetry.
 - Same as other subsystems, constants in this subsystem are located in consts class, including hardware IDs, PID values, current limits, and tunable parameters.
 - The subsystem is capable of running the roller motor to intake and eject coral game pieces, with methods to start or stop actions.
 - **Dynamic Tuning:** The subsystem monitors changes in position constants and reconfigures motors when needed.
+
 **4. Climber Subsystem**
+- Controls a single TalonFX motor which controls the elevators.
+- The subsystem achieve that by setting the climber motor to a specific voltage to raise or lower the climber.
+- All subsystem log key information, this subsystem continuosly logs the climber motor's position, velocity, current, and voltage for diagnostics and monitoring.
 
 ## Credits
 
