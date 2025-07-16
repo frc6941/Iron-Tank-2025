@@ -5,6 +5,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -29,6 +30,8 @@ public class RobotContainer {
     autoChooser.addOption("Left", AutoBuilder.buildAuto("Left"));
     autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
     autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
+
+    NamedCommands.registerCommand("Shoot L1", getAutonomousCommand());
   }
 
   private void configureBindings() {
