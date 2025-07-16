@@ -70,12 +70,11 @@ public class RobotContainer {
       intakeSubsystem.setWantedState(WantedState.ELEVATE);
     }));
 
-    // Left Trigger (LT)
-    // We don't need this anymore - this should be auto-processed
-    // mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
-    //   System.out.println("=== LT PRESSED - Elevating pivot ===");
-    //   intakeSubsystem.goToEjectPosition();
-    // }));
+    // Right Bumper (RB) - Start intake, auto stop
+    mainController.rightBumper().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
+      intakeSubsystem.setWantedState(WantedState.INTAKE);
+    }));
 
     // Right Trigger (RT) - Eject while held
     mainController.rightTrigger().onTrue(intakeSubsystem.runOnce(() -> {
@@ -88,11 +87,12 @@ public class RobotContainer {
     //   intakeSubsystem.stopEject();
     // }));
 
-    // Right Bumper (RB) - Start intake, auto stop
-    mainController.rightBumper().onTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
-      intakeSubsystem.setWantedState(WantedState.INTAKE);
-    }));
+        // Left Trigger (LT)
+    // We don't need this anymore - this should be auto-processed
+    // mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
+    //   System.out.println("=== LT PRESSED - Elevating pivot ===");
+    //   intakeSubsystem.goToEjectPosition();
+    // }));
 
     // Climber Controls
     mainController.x().onTrue(climberSubsystem.runOnce(() -> {

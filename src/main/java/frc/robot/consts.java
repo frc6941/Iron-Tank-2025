@@ -55,7 +55,7 @@ public class consts {
             public static final TunableNumber kD = new TunableNumber("pivot_kD", 0.1);
         }
         public static final class rollerPID {
-            public static final TunableNumber kP = new TunableNumber("roller_kP", 3);
+            public static final TunableNumber kP = new TunableNumber("roller_kP", 5);
             public static final TunableNumber kI = new TunableNumber("roller_kI", 0.0);
             public static final TunableNumber kD = new TunableNumber("roller_kD", 0.0);
         }
@@ -133,7 +133,10 @@ public class consts {
             // Maximum stator current to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_CURRENT_THRESHOLD = new TunableNumber("has_coral_current_threshold", 40.0);
             // Eject time in seconds
-            public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 2.0);
+            public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 0.5);
+            // Voltage to hold coral
+            public static final TunableNumber HOLD_VOLTAGE = new TunableNumber("hold_voltage", 2.0);
+        
         }
     }
 
