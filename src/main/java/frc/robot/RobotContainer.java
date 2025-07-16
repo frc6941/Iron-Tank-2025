@@ -37,7 +37,7 @@ public class RobotContainer {
     
     autoChooser.setDefaultOption("Coral Auto", simpleCoralAuto);
     autoChooser.addOption("Drive Forward Auto", driveForwardAuto);
-    SmartDashboard.putData(autoChooser);
+    SmartDashboard.putData("Chooser", autoChooser);
   }
     
   

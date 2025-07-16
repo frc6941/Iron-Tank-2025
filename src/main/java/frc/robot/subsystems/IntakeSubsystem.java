@@ -217,7 +217,9 @@ public class IntakeSubsystem extends SubsystemBase {
         if (currentState != CurrentState.IDLE) {
             return;
         }
-
+        if (scheduledTasks.isEmpty()) {
+            return;
+        }
         wantedState = scheduledTasks.remove(0); // Get the first scheduled task
 
         switch (wantedState) {

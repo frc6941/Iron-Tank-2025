@@ -10,7 +10,7 @@ public class SimpleCoralAuto extends Command {
     private DriveSubsystem driveSubsystem;
     private IntakeSubsystem intakeSubsystem;
     private Timer timer;
-    private double drive_seconds = 3.25;
+    private double drive_seconds = 2.25;
     private double exjest_seconds = 4.5;
 
     /**
@@ -65,6 +65,7 @@ public class SimpleCoralAuto extends Command {
     {
         driveSubsystem.driveArcade(0.0, 0.0,false);
         intakeSubsystem.setWantedState(WantedState.EJECT);
+        
     }
   }
 
