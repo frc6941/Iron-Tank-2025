@@ -4,6 +4,9 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -100,6 +103,18 @@ public class RobotContainer {
   }
   
   public Command getAutonomousCommand() {
-    return new Command() {};
+    return new SequentialCommandGroup(
+      // Move forward for 3 seconds (arcade drive) and move pivot to eject position at the same time
+      new ParallelCommandGroup(
+        new RunCommand(() -> driveSubsystem.arcadeDrive(0.5, 0.0), driveSubsystem).withTimeout(2.5),
+        intakeSubsystem.runOnce(() -> intakeSubsystem.goToEjectPosition())
+      ),
+      // Stop
+      new RunCommand(() -> driveSubsystem.arcadeDrive(0.0, 0.0), driveSubsystem).withTimeout(0.1),
+      // Eject for 2 seconds
+      new RunCommand(() -> intakeSubsystem.startEject(), intakeSubsystem).withTimeout(1.0),
+      // Stop eject
+      intakeSubsystem.runOnce(() -> intakeSubsystem.stopEject())
+    );
   }
 }

@@ -139,10 +139,6 @@ public class DriveSubsystem extends SubsystemBase {
         return slot0;
     }
     
-    /**
-     * @deprecated Use cheesyDrive() instead for better operator control.
-     */
-    @Deprecated
     public void arcadeDrive(double forward, double rotation) {
         differentialDrive.arcadeDrive(forward, rotation);
     }
