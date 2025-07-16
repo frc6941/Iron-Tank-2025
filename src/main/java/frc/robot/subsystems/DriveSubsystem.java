@@ -12,8 +12,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.controllers.PPLTVController;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,6 +29,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.consts;
@@ -61,9 +67,7 @@ public class DriveSubsystem extends SubsystemBase {
         // Configure the motors
         configureMotors();
 
-         // Load the RobotConfig from the GUI settings. You should probably
-        // store this in your Constants file
-        RobotConfig autoConfig = null;
+        RobotConfig autoConfig  = null;
         try{
         autoConfig = RobotConfig.fromGUISettings();
         } catch (Exception e) {
@@ -94,6 +98,20 @@ public class DriveSubsystem extends SubsystemBase {
         );
 
     }
+    
+    public Command followPathCommand(String pathName) {
+        try {
+            // Load path from PathPlanner
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+            
+            // Create the command to follow the path
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Error loading path: " + e.getMessage(), e.getStackTrace());
+            return Commands.none();
+        }
+    }
+    
 
     // Custom motor controller class to wrap TalonFX for DifferentialDrive
     private static class TalonFXMotorController implements MotorController {
@@ -426,6 +444,15 @@ public class DriveSubsystem extends SubsystemBase {
             Logger.recordOutput("Drive/PID/Reconfiguring", false);
         }
     }
+
+    public static boolean isDriving(){
+        if (getDistance(motorLeft) > 0 && getDistance(motorRight) > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     
     public void log() {
         // Left Motors

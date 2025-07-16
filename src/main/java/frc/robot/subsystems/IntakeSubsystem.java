@@ -220,6 +220,14 @@ public class IntakeSubsystem extends SubsystemBase {
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
+    public boolean isShootFinished() {
+        if (currentState == CurrentState.IDLE) { 
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void setWantedState(WantedState state) {
         scheduledTasks.add(state); // Add the state to the scheduled tasks
     }

@@ -7,12 +7,14 @@ import frc.robot.subsystems.ClimberSubsystem;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.IntakeSubsystem.WantedState;
 
 public class RobotContainer {
@@ -32,8 +34,6 @@ public class RobotContainer {
     autoChooser.addOption("Left", AutoBuilder.buildAuto("Left"));
     autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
     autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
-
-    NamedCommands.registerCommand("Shoot L1", getAutonomousCommand());
   }
 
   private void configureBindings() {
