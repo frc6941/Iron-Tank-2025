@@ -103,8 +103,7 @@ public class consts {
             public static final double TRACK_WIDTH = 0.677;
             public static final double WHEEL_DIAMETER = 0.1524;
             public static final double GEAR_RATIO = 8.45; // Motor rotations per wheel rotation
-            
-            
+  
             // Calculated values based on the above constants
             public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER; // in meters
             public static final double METERS_PER_ROTATION = WHEEL_CIRCUMFERENCE / GEAR_RATIO;

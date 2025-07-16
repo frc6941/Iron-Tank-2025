@@ -208,6 +208,14 @@ public class IntakeSubsystem extends SubsystemBase {
         return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
     }
 
+    public boolean isShootFinished() {
+        if (stopEject()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void setWantedState(WantedState state) {
         wantedState = state;
     }
