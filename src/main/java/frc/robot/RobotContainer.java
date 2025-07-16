@@ -16,7 +16,7 @@ public class RobotContainer {
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  final SendableChooser autoChooser = AutoBuilder.buildAutoChooser();
+  final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
 
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
