@@ -10,6 +10,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -34,6 +35,8 @@ public class RobotContainer {
     autoChooser.addOption("Left", AutoBuilder.buildAuto("Left"));
     autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
     autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
+    SmartDashboard.putData("Chooser", autoChooser);
+
   }
 
   private void configureBindings() {
