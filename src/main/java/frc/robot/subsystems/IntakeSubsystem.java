@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.Vector;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -51,6 +53,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private CurrentState currentState = CurrentState.IDLE; // Current state of the intake subsystem
     private WantedState wantedState = WantedState.ZERO; // Desired state of the intake subsystem
     private IntakePosition intakePosition = IntakePosition.ZERO; // Current position of the intake subsystem
+    private Vector<WantedState> scheduledTasks = new Vector<WantedState>(); // Scheduled tasks for the intake subsystem
     private boolean hasCoral = false;
 
     public IntakeSubsystem() {
@@ -209,7 +212,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void setWantedState(WantedState state) {
-        wantedState = state;
+        scheduledTasks.add(state); // Add the state to the scheduled tasks
     }
 
     public void processWantedState() {
@@ -217,6 +220,8 @@ public class IntakeSubsystem extends SubsystemBase {
         if (currentState != CurrentState.IDLE) {
             return;
         }
+
+        wantedState = scheduledTasks.remove(0); // Get the first scheduled task
 
         switch (wantedState) {
             case INTAKE:
