@@ -452,7 +452,9 @@ public class DriveSubsystem extends SubsystemBase {
             return false;
         }
     }
-
+    public void arcadeDrive(double forward, double rotation) {
+        differentialDrive.arcadeDrive(forward, rotation, false);
+    }
     
     public void log() {
         // Left Motors

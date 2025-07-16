@@ -194,7 +194,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtHoldingPosition() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double holdingPosition = zeroPosition + consts.Superstructures.Intake.HOME_POSITION.get() + consts.Superstructures.Intake.HOLD_OFFSET.get();
+        double holdingPosition = zeroPosition - consts.Superstructures.Intake.EJECT_POSITION.get();
         double positionError = Math.abs(currentPosition - holdingPosition);
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
@@ -204,7 +204,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtElevated() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double elevatedPosition = zeroPosition + consts.Superstructures.Intake.ELEVATED_POSITION.get();
+        double elevatedPosition = zeroPosition - consts.Superstructures.Intake.ELEVATED_POSITION.get();
         double positionError = Math.abs(currentPosition - elevatedPosition);
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
