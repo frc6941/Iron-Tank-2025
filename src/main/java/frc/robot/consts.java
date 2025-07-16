@@ -72,7 +72,7 @@ public class consts {
     // *** NEW: Constants for the Cheesy Drive implementation ***
     public static final class Drive {
         // Deadband for the joysticks. Any input below this value will be treated as zero.
-        public static final double DEADBAND = 0.05;
+        public static final double DEADBAND = 0.1;
         
         // A threshold for when the robot is considered "slow" enough to allow turning in place.
         public static final double QUICK_TURN_THRESHOLD = 0.2;
@@ -144,8 +144,10 @@ public class consts {
     public static final class Limits {
         // ... (no changes here)
         public static final class Chassis {
-            public static final double MAX_VELOCITY = 1.0;
+            public static final double MAX_VELOCITY = 10.0;
             public static final double MAX_OUTPUT = 0.8;
+            public static final double DRIVE_SUPPLY_CURRENT_LIMIT = 40.0;
+            public static final double DRIVE_STATOR_CURRENT_LIMIT = 40.0;
         }
 
         public static final class Intake {
