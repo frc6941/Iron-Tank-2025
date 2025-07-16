@@ -15,16 +15,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.consts;
 import frc.robot.utils.TunableNumber;
 
 public class DriveSubsystem extends SubsystemBase {
-
-    /* Definitions */
-    // T1 constants that are either calculated or retrieved from the robot's hardware.
-    private static final double WHEEL_CIRCUMFERENCE = Math.PI * consts.Superstructures.Chassis.WHEEL_DIAMETER; // in meters
-    private static final double METERS_PER_ROTATION = WHEEL_CIRCUMFERENCE / consts.Superstructures.Chassis.GEAR_RATIO;
-    private static final double ROTATIONS_PER_METER = 1.0 / METERS_PER_ROTATION;
 
     // Motors
     private static final TalonFX leftMotor = new TalonFX(consts.CANID.MOTOR_LEFT);
@@ -229,12 +224,12 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setLeftMotorVelocity(double velocity) {
-        double targetRPS = velocity * ROTATIONS_PER_METER;
+        double targetRPS = velocity * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
         setLeftMotorRPM(targetRPS);
     }
 
     public void setRightMotorVelocity(double velocity) {
-        double targetRPS = velocity * ROTATIONS_PER_METER;
+        double targetRPS = velocity * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
         setRightMotorRPM(targetRPS);
     }
 
@@ -265,7 +260,7 @@ public class DriveSubsystem extends SubsystemBase {
     public void turnInPlace(double angle) {
         // Calculate the distance each wheel needs to travel for the desired rotation
         double distance = (angle / 360.0) * Math.PI * consts.Superstructures.Chassis.TRACK_WIDTH; // in meters
-        double rotations = distance * ROTATIONS_PER_METER;
+        double rotations = distance * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
         
         // Store starting positions
         double leftStartPosition = leftMotor.getPosition().getValueAsDouble();
@@ -284,13 +279,13 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void driveLeftDistance(double distance) {
-        double deltaRotations = distance * ROTATIONS_PER_METER;
+        double deltaRotations = distance * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
         double targetPosition = leftMotor.getPosition().getValueAsDouble() + deltaRotations;
         setLeftMotorPosition(targetPosition);
     }
 
     public void driveRightDistance(double distance) {
-        double deltaRotations = distance * ROTATIONS_PER_METER;
+        double deltaRotations = distance * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
         double targetPosition = rightMotor.getPosition().getValueAsDouble() + deltaRotations;
         setRightMotorPosition(targetPosition);
     }
@@ -397,8 +392,8 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Wheels/Right/Current", rightWheelCurrent);
         
         // Wheel velocity in meters per second (converted from rotations per second)
-        double leftWheelVelocityMPS = leftWheelVelocity * METERS_PER_ROTATION;
-        double rightWheelVelocityMPS = rightWheelVelocity * METERS_PER_ROTATION;
+        double leftWheelVelocityMPS = leftWheelVelocity * consts.Superstructures.Chassis.METERS_PER_ROTATION;
+        double rightWheelVelocityMPS = rightWheelVelocity * consts.Superstructures.Chassis.METERS_PER_ROTATION;
         Logger.recordOutput("Drive/Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
         Logger.recordOutput("Drive/Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
         

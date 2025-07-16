@@ -98,7 +98,12 @@ public class consts {
         public static final class Chassis {
             public static final double TRACK_WIDTH = 0.677;
             public static final double WHEEL_DIAMETER = 0.1524;
-            public static final double GEAR_RATIO = 8.45; // Motor rotations per wheel rotation 
+            public static final double GEAR_RATIO = 8.45; // Motor rotations per wheel rotation
+            
+            // Calculated values based on the above constants
+            public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER; // in meters
+            public static final double METERS_PER_ROTATION = WHEEL_CIRCUMFERENCE / GEAR_RATIO;
+            public static final double ROTATIONS_PER_METER = 1.0 / METERS_PER_ROTATION;
         }
 
         public static final class Intake {
