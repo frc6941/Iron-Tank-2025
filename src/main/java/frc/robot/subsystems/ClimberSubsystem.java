@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
+// import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
 
 public class ClimberSubsystem extends SubsystemBase {
-    private final TalonFX climberMotor = new TalonFX(consts.CANID.CLIMBER_MOTOR);
+    private final TalonFX climberMotor = new TalonFX(consts.CANID.MOTOR_CLIMBER);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
 

@@ -12,14 +12,14 @@ public class consts {
      * ============================== */
     public static final class CANID {
         // ... (no changes here)
-        public static final int LEFTMOTOR = 4;
-        public static final int LEFTMOTORFOLLEWER = 2;
-        public static final int RIGHTMOTOR = 1;
-        public static final int RIGHTMOTORFOLLOWER = 3;
-        public static final int PIVOTMOTOR = 5; 
-        public static final int ROLLERMOTOR = 6; 
-        public static final int PIVOTENCODER = 8;
-        public static final int CLIMBER_MOTOR = 7;
+        public static final int MOTOR_LEFT = 4;
+        public static final int MOTOR_LEFT_FOLLEWER = 2;
+        public static final int MOTOR_RIGHT = 1;
+        public static final int MOTOR_RIGHT_FOLLOWER = 3;
+        public static final int MOTOR_PIVOT = 5; 
+        public static final int MOTOR_ROLLER = 6; 
+        public static final int ENCODER_PIVOT = 8;
+        public static final int MOTOR_CLIMBER = 7;
     }
 
     /* =============================== |
@@ -62,6 +62,9 @@ public class consts {
         }
     }
     
+    /* =============================== |
+     *             Joysticks           |
+     * ============================== */
     // *** NEW: Constants for the Cheesy Drive implementation ***
     public static final class Drive {
         // Deadband for the joysticks. Any input below this value will be treated as zero.
@@ -105,6 +108,15 @@ public class consts {
             public static final double POSITION_TOLERANCE = 0.05; // Position tolerance in rotations
 
             public static final double L1 = 100; // Height in degrees for L1 state
+        }
+    }
+
+    /* =============================== |
+     *             Sensors             |
+     * ============================== */
+    public static final class Sensors {
+        public static final class Offset {
+            public static final double INTAKE_CANCODER_MAGET_OFFSET = -0.382080078125;
         }
     }
 

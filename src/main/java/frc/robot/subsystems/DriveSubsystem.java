@@ -27,10 +27,10 @@ public class DriveSubsystem extends SubsystemBase {
     private static final double ROTATIONS_PER_METER = 1.0 / METERS_PER_ROTATION;
 
     // Motors
-    private static final TalonFX leftMotor = new TalonFX(consts.CANID.LEFTMOTOR);
-    private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.LEFTMOTORFOLLEWER);
-    private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
-    private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
+    private static final TalonFX leftMotor = new TalonFX(consts.CANID.MOTOR_LEFT);
+    private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.MOTOR_LEFT_FOLLEWER);
+    private static final TalonFX rightMotor = new TalonFX(consts.CANID.MOTOR_RIGHT);
+    private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.MOTOR_RIGHT_FOLLOWER);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);

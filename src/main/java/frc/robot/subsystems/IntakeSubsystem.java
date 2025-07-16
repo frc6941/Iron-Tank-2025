@@ -7,7 +7,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+// import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -21,13 +21,13 @@ import frc.robot.consts;
 public class IntakeSubsystem extends SubsystemBase {
 
     // Motors
-    private final TalonFX pivotMotor = new TalonFX(consts.CANID.PIVOTMOTOR);
-    private final TalonFX rollerMotor = new TalonFX(consts.CANID.ROLLERMOTOR);
-    private final CANcoder pivotEncoder = new CANcoder(consts.CANID.PIVOTENCODER);
+    private final TalonFX motorPivot = new TalonFX(consts.CANID.MOTOR_PIVOT);
+    private final TalonFX motorRoller = new TalonFX(consts.CANID.MOTOR_ROLLER);
+    private final CANcoder pivotEncoder = new CANcoder(consts.CANID.ENCODER_PIVOT);
 
     // Controls
     private final PositionVoltage positionRequest = new PositionVoltage(0);
-    private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+    // private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
 
 
@@ -42,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem() {
         configureMotors();
         CANcoderConfiguration CANcoder = new CANcoderConfiguration();
-        CANcoder.MagnetSensor.MagnetOffset = -0.382080078125; // Set your desired offset here
+        CANcoder.MagnetSensor.MagnetOffset = consts.Sensors.Offset.INTAKE_CANCODER_MAGET_OFFSET;
         CANcoder.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
         pivotEncoder.getConfigurator().apply(CANcoder);
 
@@ -111,7 +111,7 @@ public class IntakeSubsystem extends SubsystemBase {
         System.out.println("IntakeSubsystem: startEject() called");
         double power = consts.INTAKE_ROLLER_POWER.get();
         System.out.println("IntakeSubsystem: Starting eject with power: " + power);
-        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
+        motorRoller.setControl(dutyCycleRequest.withOutput(power));
         isEjecting = true;
         isIntaking = false;
         // System.out.println("IntakeSubsystem: Eject started successfully");
@@ -134,7 +134,7 @@ public class IntakeSubsystem extends SubsystemBase {
         System.out.println("IntakeSubsystem: startIntake() called");
         double power = -consts.INTAKE_ROLLER_POWER.get();
         System.out.println("IntakeSubsystem: Starting intake with power: " + power);
-        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
+        motorRoller.setControl(dutyCycleRequest.withOutput(power));
         isIntaking = true;
         isEjecting = false;
         // System.out.println("IntakeSubsystem: Intake started successfully");
