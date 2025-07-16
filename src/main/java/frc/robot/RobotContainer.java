@@ -3,6 +3,10 @@ package frc.robot;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -12,12 +16,16 @@ public class RobotContainer {
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  final SendableChooser autoChooser = AutoBuilder.buildAutoChooser();
 
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
 
   public RobotContainer() {
     configureBindings();
+    autoChooser.addOption("Left", AutoBuilder.buildAuto("Left"));
+    autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
+    autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
   }
 
   private void configureBindings() {
@@ -100,6 +108,6 @@ public class RobotContainer {
   }
   
   public Command getAutonomousCommand() {
-    return new Command() {};
+    return autoChooser.getSelected();
   }
 }
