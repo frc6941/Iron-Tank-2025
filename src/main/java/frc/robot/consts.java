@@ -20,6 +20,8 @@ public class consts {
         public static final int MOTOR_ROLLER = 6; 
         public static final int ENCODER_PIVOT = 8;
         public static final int MOTOR_CLIMBER = 7;
+        public static final int GYRO = 0;
+        
     }
 
     /* =============================== |

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -10,8 +11,14 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPLTVController;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +33,9 @@ public class DriveSubsystem extends SubsystemBase {
     private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.MOTOR_LEFT_FOLLEWER);
     private static final TalonFX rightMotor = new TalonFX(consts.CANID.MOTOR_RIGHT);
     private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.MOTOR_RIGHT_FOLLOWER);
+
+    // Gyro
+    private static final WPI_PigeonIMU gyro = new WPI_PigeonIMU(consts.CANID.GYRO);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
@@ -48,6 +58,43 @@ public class DriveSubsystem extends SubsystemBase {
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
+
+         // Load the RobotConfig from the GUI settings. You should probably
+        // store this in your Constants file
+        RobotConfig config;
+        try{
+        config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+        // Handle exception as needed
+        e.printStackTrace();
+        }
+
+        // Configure AutoBuilder last
+        AutoBuilder.configure(
+            this::getPose, // Robot pose supplier
+            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
+            config, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+        );
+
+    }
+
+    public Pose2d getPose() {
+
     }
 
     // Custom motor controller class to wrap TalonFX for DifferentialDrive
@@ -208,6 +255,8 @@ public class DriveSubsystem extends SubsystemBase {
                 leftPwm -= overPower;
                 rightPwm = -1.0;
             }
+
+            DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), , null)
         }
 
         // Use tankDrive to set the final motor outputs.
