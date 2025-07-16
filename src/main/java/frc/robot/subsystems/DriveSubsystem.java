@@ -17,14 +17,19 @@ import com.pathplanner.lib.controllers.PPLTVController;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.consts;
+import frc.robot.consts.Drive.CheesyDrive;
 import frc.robot.utils.TunableNumber;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -44,11 +49,11 @@ public class DriveSubsystem extends SubsystemBase {
     private final PIDController positionPID = new PIDController(consts.PID.positionPID.kP.get(), consts.PID.positionPID.kI.get(), consts.PID.positionPID.kD.get());
 
     // Motor Controllers for DifferentialDrive
-    private static final MotorController motorLeftController = new TalonFXMotorController(motorLeft);
-    private static final MotorController motorRightController = new TalonFXMotorController(motorRight);
+    private static final MotorController moterLeftController = new TalonFXMotorController(motorLeft);
+    private static final MotorController moterRightController = new TalonFXMotorController(motorRight);
     
     // Differential Drive
-    private static final DifferentialDrive differentialDrive = new DifferentialDrive(motorLeftController, motorRightController);
+    private static final DifferentialDrive differentialDrive = new DifferentialDrive(moterLeftController, moterRightController);
 
     // *** NEW: State variables for Cheesy Drive logic ***
     private double mOldWheel = 0.0;
@@ -62,9 +67,9 @@ public class DriveSubsystem extends SubsystemBase {
 
          // Load the RobotConfig from the GUI settings. You should probably
         // store this in your Constants file
-        RobotConfig config;
+        RobotConfig autoConfig = null;
         try{
-        config = RobotConfig.fromGUISettings();
+        autoConfig = RobotConfig.fromGUISettings();
         } catch (Exception e) {
         // Handle exception as needed
         e.printStackTrace();
@@ -77,7 +82,7 @@ public class DriveSubsystem extends SubsystemBase {
             this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
-            config, // The robot configuration
+            autoConfig, // The robot configuration
             () -> {
               // Boolean supplier that controls when the path will be mirrored for the red alliance
               // This will flip the path being followed to the red side of the field.
@@ -94,46 +99,42 @@ public class DriveSubsystem extends SubsystemBase {
 
     }
 
-    public Pose2d getPose() {
-        
-    }
-
     // Custom motor controller class to wrap TalonFX for DifferentialDrive
     private static class TalonFXMotorController implements MotorController {
-        private final TalonFX motor;
+        private final TalonFX moter;
         
-        public TalonFXMotorController(TalonFX motor) {
-            this.motor = motor;
+        public TalonFXMotorController(TalonFX moter) {
+            this.moter = moter;
         }
         
         @Override
         public void set(double speed) {
-            motor.setControl(new DutyCycleOut(speed));
+            moter.setControl(new DutyCycleOut(speed));
         }
         
         @Override
         public double get() {
-            return motor.getDutyCycle().getValueAsDouble();
+            return moter.getDutyCycle().getValueAsDouble();
         }
         
         @Override
         public void setInverted(boolean isInverted) {
-            // Inversion is handled in motor configuration
+            // Inversion is handled in moter configuration
         }
         
         @Override
         public boolean getInverted() {
-            return false; // Inversion handled in motor config
+            return false; // Inversion handled in moter config
         }
         
         @Override
         public void disable() {
-            motor.setControl(new DutyCycleOut(0.0));
+            moter.setControl(new DutyCycleOut(0.0));
         }
         
         @Override
         public void stopMotor() {
-            motor.setControl(new DutyCycleOut(0.0));
+            moter.setControl(new DutyCycleOut(0.0));
         }
     }
 
@@ -250,11 +251,9 @@ public class DriveSubsystem extends SubsystemBase {
                 leftPwm -= overPower;
                 rightPwm = -1.0;
             }
-
-            DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getRotation2d(),
-            motorLeft.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION, 
-            motorRight.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION);
         }
+
+
 
         // Use tankDrive to set the final motor outputs.
         tankDrive(leftPwm, rightPwm);
@@ -267,6 +266,43 @@ public class DriveSubsystem extends SubsystemBase {
         
         // Use DifferentialDrive, ensuring inputs are not squared as calculations are already done
         differentialDrive.tankDrive(leftSpeed, rightSpeed, false);
+    }
+
+    public static double getDistance(TalonFX motor) {
+        return motor.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION;
+    }
+
+    DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(consts.Superstructures.Chassis.TRACK_WIDTH);
+
+    DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
+        gyro.getRotation2d(),
+        getDistance(motorLeft),
+        getDistance(motorRight));
+
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
+
+    public void updateOdometry(){
+        var gyroAngle = gyro.getRotation2d();
+        odometry.update(gyroAngle, getDistance(motorLeft),getDistance(motorRight));
+    }
+
+    public void resetPose(Pose2d pose) {
+        odometry.resetPosition(gyro.getRotation2d(), getDistance(motorLeft),getDistance(motorRight), pose);
+    }
+
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        DifferentialDriveWheelSpeeds speeds = new DifferentialDriveWheelSpeeds(
+            Units.rotationsToRadians(motorLeft.getVelocity().getValueAsDouble()), 
+            Units.rotationsToRadians(motorRight.getVelocity().getValueAsDouble()));
+        return kinematics.toChassisSpeeds(speeds);
+    }
+
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
+        setLeftMotorVelocity(wheelSpeeds.leftMetersPerSecond);
+        setRightMotorVelocity(wheelSpeeds.rightMetersPerSecond);
     }
 
     public void setLeftMotorVelocity(double velocity) {
@@ -453,5 +489,6 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         updatePID();
         log();
+        updateOdometry();
     }
 }
