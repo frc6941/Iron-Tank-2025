@@ -1,7 +1,8 @@
-# Iron Tank 2025 Codes #
+<div align="center">
+<h1>Iron Tank 2025 Codes</h1>
+The beta version of robot codes written for Sanya off-season FRC competition.<br><br>
 
-## The beta version of robot codes written for Sanya off-season FRC competition ##
-
+</div>
 This project contains the beta version of the control software for the Iron Tank 2025 robot, designed for the Sanya off-season FIRST Robotics Competition. These softwares are included in the version: 
 
 * WPILib for robot control
@@ -15,6 +16,17 @@ The code is structured using command-based programming, with subsystems and comm
 
 This code is about to be implemented on team Everybot 9994
 
-# Known issues
+## Known issues & To Do List
 
 Coming soon
+
+## Release Notes
+
+## Credits
+
+- [Hongfei Liu](https://github.com/AlltAWD)
+- [Yifan Cao](https://github.com/MemoryArray)
+- [Dale](https://github.com/Dale-D-A)
+- [Xiqiu Yan](https://github.com/KuanYan666)
+
+## Thanks to all contributors of this program
