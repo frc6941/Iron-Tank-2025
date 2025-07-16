@@ -118,6 +118,13 @@ public class consts {
             public static final double POSITION_TOLERANCE = 0.05; // Position tolerance in rotations
 
             public static final double L1 = 100; // Height in degrees for L1 state
+
+            // Minimum velocity to consider if motorRoller has stopped from a coral
+            public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 1.0);
+            // Maximum stator current to consider if motorRoller has stopped from a coral
+            public static final TunableNumber HAS_CORAL_CURRENT_THRESHOLD = new TunableNumber("has_coral_current_threshold", 40.0);
+            // Eject time in seconds
+            public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 2.0);
         }
     }
 
@@ -125,8 +132,9 @@ public class consts {
      *             Sensors             |
      * ============================== */
     public static final class Sensors {
-        public static final class Offset {
+        public static final class Encoder {
             public static final double INTAKE_CANCODER_MAGET_OFFSET = -0.382080078125;
+            public static final double ROTOR_TO_SENSOR_RATIO = 12.0;
         }
     }
 

@@ -59,8 +59,6 @@ public class DriveSubsystem extends SubsystemBase {
     private double mOldWheel = 0.0;
     private double mNegInertiaAccumulator = 0.0;
 
-    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
-
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
