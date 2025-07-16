@@ -283,6 +283,12 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("DriveSubsystem/TurnRotations", rotations);
     }
 
+    /** Turn the robot 360 degrees in place */
+    public void turnAround() {
+        System.out.println("DriveSubsystem: turnAround() called");
+        turnInPlace(360.0);
+    }
+
     public void driveLeftDistance(double distance) {
         double deltaRotations = distance * ROTATIONS_PER_METER;
         double targetPosition = leftMotor.getPosition().getValueAsDouble() + deltaRotations;

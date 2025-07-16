@@ -12,6 +12,7 @@ public class RobotContainer {
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  private boolean climberReadyToClimb = false;
 
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
@@ -82,12 +83,23 @@ public class RobotContainer {
 
     // Climber Controls
     mainController.x().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== X BUTTON PRESSED - Start climbing ===");
-      climberSubsystem.setClimberVoltage();
+      if (!climberSubsystem.isAtStartPosition()) {
+        System.out.println("=== X BUTTON PRESSED - Move to start climb position ===");
+        climberSubsystem.goToStartClimb();
+      } else {
+        System.out.println("=== X BUTTON PRESSED - Start climbing for 3 seconds ===");
+        climberSubsystem.startClimbFor3Sec();
+      }
     }));
     mainController.a().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== A BUTTON PRESSED - Stop climbing ===");
-      climberSubsystem.stopClimb();
+      System.out.println("=== A BUTTON PRESSED - Move to zero position ===");
+      climberSubsystem.goToZero();
+    }));
+
+    // Y button - Turn the robot around 360 degrees
+    mainController.y().onTrue(driveSubsystem.runOnce(() -> {
+      System.out.println("=== Y BUTTON PRESSED - Turn around ===");
+      driveSubsystem.turnAround();
     }));
   }
 
