@@ -98,6 +98,10 @@ public class DriveSubsystem extends SubsystemBase {
         );
 
     }
+
+    public void driveArcade(double xSpeed, double zRotation, boolean squared) {
+        differentialDrive.arcadeDrive(xSpeed, zRotation, squared);
+      }
     
     public Command followPathCommand(String pathName) {
         try {
@@ -519,5 +523,7 @@ public class DriveSubsystem extends SubsystemBase {
         updatePID();
         log();
         updateOdometry();
+
+        
     }
 }
