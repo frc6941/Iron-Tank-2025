@@ -266,6 +266,8 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If the eject timer has expired, stop the eject
                 if (timer.hasElapsed(consts.Superstructures.Intake.EJECT_TIME.get())) {
                     stopEject();
+                    timer.stop();
+                    hasCoral = false; // Reset coral detection after ejecting
                     currentState = CurrentState.IDLE; // No scheduled task, so we go to default state
                     wantedState = WantedState.ZERO; // After ejecting, we want to go to zero position
                 } else {
@@ -277,6 +279,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If we reach holding point, go IDLE
                 if (isAtHoldingPosition()) {
                     currentState = CurrentState.IDLE;
+                    intakePosition = IntakePosition.HOLD; // Update intake position to holding
                 } else {
                     goToEjectPosition();
                 }
@@ -285,6 +288,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If the pivot is at the elevated position, turn to IDLE
                 if (isAtElevated()) {
                     currentState = CurrentState.IDLE;
+                    intakePosition = IntakePosition.ELEVATE; // Update intake position to elevated
                 } else {
                     elevate();
                 }
@@ -293,6 +297,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If the pivot is at the zero position, turn to IDLE
                 if (isAtZero()) {
                     currentState = CurrentState.IDLE;
+                    intakePosition = IntakePosition.ZERO; // Update intake position to zero
                 } else {
                     goToZero();
                 }
