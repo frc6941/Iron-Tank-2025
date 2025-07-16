@@ -29,7 +29,7 @@ import frc.robot.consts.Limits.Intake;
  * EJECT:       /
  * ELEVATE:     __
  */
-public class IntakeSubsystem extends SubsystemBase {
+public class Intaker extends SubsystemBase {
 
     // Motors
     private final TalonFX motorPivot = new TalonFX(consts.CANID.MOTOR_PIVOT);
@@ -46,15 +46,15 @@ public class IntakeSubsystem extends SubsystemBase {
     
     private double zeroPosition = 0.0; // Current zero position (set by Y button)
     public static enum CurrentState {INTAKING, EJECTING, HOLDING, ELEVATING, ZEROING, IDLE}
-    public static enum WantedState {INTAKE, EJECT, HOLD, ELEVATE, ZERO}
+    public static enum WantedState {INTAKE, EJECT, HOLD, ELEVATE, ZERO, IDLING}
     public static enum IntakePosition {ZERO, HOLD, ELEVATE}
-    public CurrentState currentState = CurrentState.IDLE; // Current state of the intake subsystem
+    public CurrentState currentState = CurrentState.ZEROING; // Current state of the intake subsystem
     private WantedState wantedState = WantedState.ZERO; // Desired state of the intake subsystem
     private IntakePosition intakePosition = IntakePosition.ZERO; // Current position of the intake subsystem
     private Vector<WantedState> scheduledTasks = new Vector<WantedState>(); // Scheduled tasks for the intake subsystem
     private boolean hasCoral = false;
 
-    public IntakeSubsystem() {
+    public Intaker() {
         configureMotors();
         CANcoderConfiguration CANcoder = new CANcoderConfiguration();
         CANcoder.MagnetSensor.MagnetOffset = consts.Sensors.Encoder.INTAKE_CANCODER_MAGET_OFFSET;
@@ -352,6 +352,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // Coral detection logging
         Logger.recordOutput("Intake/Coral/HasCoral", hasCoral);
+
+        // //
+        // Logger.recordOutput("Intake/Pivot/WantedState", WantedState.values());
+        // Logger.recordOutput("Intake/Pivot/CurrentState", CurrentState.values());
     }
 
     @Override

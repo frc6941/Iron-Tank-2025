@@ -4,12 +4,21 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.net.WebServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,19 +30,33 @@ import frc.robot.subsystems.DriveSubsystem;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
   
   private RobotContainer m_robotContainer;
-
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
+    Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+
+    // if (isReal()) {
+    //   Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+    // } else {
+    //   setUseTiming(false); // Run as fast as possible
+    //   String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+    //   Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+    //   Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+    // }
+    Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+
+    // Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+    // // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // // autonomous chooser on the dashboard.
+    Logger.addDataReceiver(new WPILOGWriter());
+    Logger.start();
     m_robotContainer = new RobotContainer();
     CameraServer.startAutomaticCapture("Intake Camera",0);
     CameraServer.startAutomaticCapture("Climber Camera", 1);

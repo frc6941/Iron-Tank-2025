@@ -1,7 +1,7 @@
 package frc.robot;
 
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -9,6 +9,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.events.EventTrigger;
 
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,12 +17,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.IntakeSubsystem.WantedState;
+import frc.robot.subsystems.intake.IntakePivotIOReal;
+import frc.robot.subsystems.intake.IntakePivotIOSim;
+import frc.robot.subsystems.intake.IntakeRollerIOReal;
+import frc.robot.subsystems.intake.IntakeRollerIOSim;
+import frc.robot.subsystems.intake.IntakeSubsystem.WantedState;
+import frc.robot.subsystems.intake.IntakeSubsystem.WantedState.*;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
-  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+  private final IntakeSubsystem intakeSubsystem;
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
 
@@ -31,8 +37,14 @@ public class RobotContainer {
   private boolean climberReadyToClimb = false;
 
   public RobotContainer() {
+    if (RobotBase.isReal()){
+      intakeSubsystem = new IntakeSubsystem(new IntakePivotIOReal(), new IntakeRollerIOReal());
+    } else {
+      intakeSubsystem = new IntakeSubsystem(new IntakePivotIOSim(), new IntakeRollerIOSim());
+    }
+
     configureBindings();
-    autoChooser.addOption("Left", AutoBuilder.buildAuto("Left"));
+    autoChooser.addOption("Left", AutoBuilder.buildAuto("Left")); 
     autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
     autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
     SmartDashboard.putData("Chooser", autoChooser);
@@ -64,13 +76,13 @@ public class RobotContainer {
     // B button - Move pivot back to zero position
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
-      intakeSubsystem.setWantedState(WantedState.ZERO);
+      intakeSubsystem.setWantedState(WantedState.HOME);
     }));
 
     // Left Bumper (LB) - Elevate pivot
-    mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
+    mainController.a().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
-      intakeSubsystem.setWantedState(WantedState.ELEVATE);
+      intakeSubsystem.setWantedState(WantedState.DEPLOY_WITHOUT_ROLL);
     }));
 
     // Left Trigger (LT)
@@ -81,9 +93,9 @@ public class RobotContainer {
     // }));
 
     // Right Trigger (RT) - Eject while held
-    mainController.rightTrigger().onTrue(intakeSubsystem.runOnce(() -> {
+    mainController.x().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== RT HELD - Ejecting ===");
-      intakeSubsystem.setWantedState(WantedState.EJECT);;
+      intakeSubsystem.setWantedState(WantedState.SHOOT);;
     }));
     // This is auto-processed, so we don't need a release command
     // mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
@@ -92,9 +104,9 @@ public class RobotContainer {
     // }));
 
     // Right Bumper (RB) - Start intake, auto stop
-    mainController.rightBumper().onTrue(intakeSubsystem.runOnce(() -> {
+    mainController.y().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
-      intakeSubsystem.setWantedState(WantedState.INTAKE);
+      intakeSubsystem.setWantedState(WantedState.DEPLOY_INTAKE);
     }));
 
     // Climber Controls

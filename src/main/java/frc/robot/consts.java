@@ -1,5 +1,8 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Newton;
+
+import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
 import com.pathplanner.lib.config.RobotConfig;
 
 import frc.robot.utils.TunableNumber;
@@ -126,6 +129,9 @@ public class consts {
             public static final TunableNumber EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
             public static final TunableNumber PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
             public static final TunableNumber ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
+            
+            public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("intake_voltage",6.0);
+            public static final TunableNumber INTAKE_HOLD_VOLTAGE = new TunableNumber("intake_hold_voltage",2.0);
 
             // Minimum velocity to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 1.0);
@@ -133,6 +139,14 @@ public class consts {
             public static final TunableNumber HAS_CORAL_CURRENT_THRESHOLD = new TunableNumber("has_coral_current_threshold", 40.0);
             // Eject time in seconds
             public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 2.0);
+
+            public static final TunableNumber INTAKE_PIVOT_CRUISE_VELOCITY = new TunableNumber("intake_pivot_cruise_velocity", 250);
+            public static final TunableNumber INTAKE_PIVOT_ACCELERATION = new TunableNumber("intake_pivot_cruise_velocity", 250);
+            public static final TunableNumber INTAKE_PIVOT_JERK = new TunableNumber("intake_pivot_cruise_velocity", 0);
+
+            //
+            public static final boolean IS_INVERT = false;
+            public static final boolean IS_BRAKE = false;
         }
     }
 
@@ -175,4 +189,5 @@ public class consts {
     public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0);
     public static final TunableNumber CLIMBER_START_POSITION = new TunableNumber("climber_start_position", -18.0); // Set default as needed
     public static final TunableNumber CLIMBER_ZERO_POSITION = new TunableNumber("climber_zero_position", -22.632812); // Set default as needed
+    public static final double LOOPER_DT = 1 / 50.0;
 }

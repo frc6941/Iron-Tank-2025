@@ -511,6 +511,8 @@ public class DriveSubsystem extends SubsystemBase {
         // Average wheel velocity for overall robot speed
         double averageWheelVelocityMPS = (leftWheelVelocityMPS + rightWheelVelocityMPS) / 2.0;
         Logger.recordOutput("Drive/Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
+
+        Logger.recordOutput("Drive", odometry.getPoseMeters());
     }
 
     // This method will be called once per scheduler run
