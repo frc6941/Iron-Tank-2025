@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import org.frcteam2910.common.robot.drivers.Pigeon;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
@@ -18,17 +17,8 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.controllers.PPLTVController;
-import com.pathplanner.lib.path.PathPoint;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.kinematics.Kinematics;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -45,10 +35,10 @@ public class DriveSubsystem extends SubsystemBase {
     private static final double ROTATIONS_PER_METER = 1.0 / METERS_PER_ROTATION;
 
     // Motors
-    private static final TalonFX motorLeft = new TalonFX(consts.CANID.MOTOR_LEFT);
-    private static final TalonFX motorLeftFollower = new TalonFX(consts.CANID.MOTOR_LEFT_FOLLEWER);
-    private static final TalonFX motorRight = new TalonFX(consts.CANID.MOTOR_RIGHT);
-    private static final TalonFX motorRightFollower = new TalonFX(consts.CANID.MOTOR_RIGHT_FOLLOWER);
+    private static final TalonFX leftMotor = new TalonFX(consts.CANID.LEFTMOTOR);
+    private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.LEFTMOTORFOLLEWER);
+    private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
+    private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
@@ -56,18 +46,22 @@ public class DriveSubsystem extends SubsystemBase {
     private final PIDController positionPID = new PIDController(consts.PID.positionPID.kP.get(), consts.PID.positionPID.kI.get(), consts.PID.positionPID.kD.get());
 
     // Motor Controllers for DifferentialDrive
-    private static final MotorController motorLeftController = new TalonFXMotorController(motorLeft);
-    private static final MotorController motorRightController = new TalonFXMotorController(motorRight);
+    private static final MotorController leftMotorController = new TalonFXMotorController(leftMotor);
+    private static final MotorController rightMotorController = new TalonFXMotorController(rightMotor);
     
     // Differential Drive
-    private static final DifferentialDrive differentialDrive = new DifferentialDrive(motorLeftController, motorRightController);
+    private static final DifferentialDrive differentialDrive = new DifferentialDrive(leftMotorController, rightMotorController);
+
+    // *** NEW: State variables for Cheesy Drive logic ***
+    private double mOldWheel = 0.0;
+    private double mNegInertiaAccumulator = 0.0;
 
     public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
 
 
     // Gyro (Pigeon 1.0)
-    public WPI_PigeonIMU gyro = new WPI_PigeonIMU(0);
-    
+    public PigeonIMU gyro = new PigeonIMU(0);
+
     double yaw = gyro.getYaw();
 
     public void resetGyro() {
@@ -91,26 +85,26 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         // Configure AutoBuilder last
-        AutoBuilder.configure(
-            this::getPose, // Robot pose supplier
-            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-            this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
-            config, // The robot configuration
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+    //     AutoBuilder.configure(
+    //         this::getPose, // Robot pose supplier
+    //         this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+    //         this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+    //         (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+    //         new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
+    //         config, // The robot configuration
+    //         () -> {
+    //           // Boolean supplier that controls when the path will be mirrored for the red alliance
+    //           // This will flip the path being followed to the red side of the field.
+    //           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            this // Reference to this subsystem to set requirements
-    );
+    //           var alliance = DriverStation.getAlliance();
+    //           if (alliance.isPresent()) {
+    //             return alliance.get() == DriverStation.Alliance.Red;
+    //           }
+    //           return false;
+    //         },
+    //         this // Reference to this subsystem to set requirements
+    // );
 
         
     }
@@ -167,10 +161,12 @@ public class DriveSubsystem extends SubsystemBase {
         );
         TalonFXConfiguration leftTalonFXConfig = generateTalonFXConfig(true, NeutralModeValue.Brake, slot0Configs);
         TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
-        motorLeft.getConfigurator().apply(leftTalonFXConfig);
-        motorRight.getConfigurator().apply(rightTalonFXConfig);
-        motorLeftFollower.setControl(new Follower(motorLeft.getDeviceID(), false));
-        motorRightFollower.setControl(new Follower(motorRight.getDeviceID(), false));
+        leftMotor.getConfigurator().apply(leftTalonFXConfig);
+        rightMotor.getConfigurator().apply(rightTalonFXConfig);
+        leftMotorFollower.getConfigurator().apply(leftTalonFXConfig);
+        rightMotorFollower.getConfigurator().apply(rightTalonFXConfig);
+        leftMotorFollower.setControl(new Follower(leftMotor.getDeviceID(), false));
+        rightMotorFollower.setControl(new Follower(rightMotor.getDeviceID(), false));
     }
 
     public TalonFXConfiguration generateTalonFXConfig (
@@ -181,9 +177,7 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXConfiguration talonFXConfig = new TalonFXConfiguration();
         talonFXConfig.MotorOutput.Inverted = inverted? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
         talonFXConfig.MotorOutput.NeutralMode = defaultNeutralMode;
-
         talonFXConfig.Slot0 = slot0;
-
         return talonFXConfig;
     }
 
@@ -198,31 +192,94 @@ public class DriveSubsystem extends SubsystemBase {
         slot0.kG = kG;
         return slot0;
     }
-
+    
+    /**
+     * @deprecated Use cheesyDrive() instead for better operator control.
+     */
+    @Deprecated
     public void arcadeDrive(double forward, double rotation) {
-        // Apply deadband to prevent drift
-        forward = Math.abs(forward) < 0.05 ? 0.0 : forward;
-        rotation = Math.abs(rotation) < 0.05 ? 0.0 : rotation;
-        
-        // Apply speed limiting
-        forward = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, forward));
-        rotation = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, rotation));
-        
-        // Use DifferentialDrive
         differentialDrive.arcadeDrive(forward, rotation);
     }
 
-    public void tankDrive(double leftSpeed, double rightSpeed) {
-        // Apply deadband to prevent drift
-        leftSpeed = Math.abs(leftSpeed) < 0.05 ? 0.0 : leftSpeed;
-        rightSpeed = Math.abs(rightSpeed) < 0.05 ? 0.0 : rightSpeed;
+    // *** NEW: Cheesy Drive implementation with negative inertia and quick-turn ***
+    public void cheesyDrive(double forward, double rotation, boolean isQuickTurn) {
+        // Apply deadband from constants
+        double throttle = Math.abs(forward) < consts.Drive.DEADBAND ? 0.0 : forward;
+        double wheel = Math.abs(rotation) < consts.Drive.DEADBAND ? 0.0 : rotation;
+
+        // --- Negative Inertia Logic ---
+        double negInertia = wheel - mOldWheel;
+        mOldWheel = wheel;
+
+        double negInertiaScalar;
+        if (wheel * negInertia > 0) {
+            negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTIA_SCALAR;
+        } else {
+            if (Math.abs(wheel) > consts.Drive.CheesyDrive.NEG_INERTIA_THRESHOLD) {
+                negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTIA_TURN_SCALAR;
+            } else {
+                negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTia_CLOSE_SCALAR;
+            }
+        }
         
+        double negInertiaPower = negInertia * negInertiaScalar;
+        mNegInertiaAccumulator += negInertiaPower;
+
+        // Apply the corrective power to the steering command
+        wheel += mNegInertiaAccumulator;
+
+        // Decay the accumulator
+        if (mNegInertiaAccumulator > 1) {
+            mNegInertiaAccumulator -= 1;
+        } else if (mNegInertiaAccumulator < -1) {
+            mNegInertiaAccumulator += 1;
+        } else {
+            mNegInertiaAccumulator = 0;
+        }
+
+        double leftPwm, rightPwm;
+
+        if (isQuickTurn) {
+            // SWAPPED: Fix left/right reversal
+            leftPwm = -wheel;
+            rightPwm = wheel;
+        } else {
+            double overPower;
+            double angularPower = Math.abs(throttle) * wheel;
+            // SWAPPED: Fix left/right reversal
+            leftPwm = throttle - angularPower;
+            rightPwm = throttle + angularPower;
+
+            if (leftPwm > 1.0) {
+                overPower = leftPwm - 1.0;
+                rightPwm -= overPower;
+                leftPwm = 1.0;
+            } else if (rightPwm > 1.0) {
+                overPower = rightPwm - 1.0;
+                leftPwm -= overPower;
+                rightPwm = 1.0;
+            } else if (leftPwm < -1.0) {
+                overPower = leftPwm + 1.0;
+                rightPwm -= overPower;
+                leftPwm = -1.0;
+            } else if (rightPwm < -1.0) {
+                overPower = rightPwm + 1.0;
+                leftPwm -= overPower;
+                rightPwm = -1.0;
+            }
+        }
+
+        // Use tankDrive to set the final motor outputs.
+        tankDrive(leftPwm, rightPwm);
+    }
+
+    public void tankDrive(double leftSpeed, double rightSpeed) {
         // Apply speed limiting
         leftSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, leftSpeed));
         rightSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, rightSpeed));
         
-        // Use DifferentialDrive
-        differentialDrive.tankDrive(leftSpeed, rightSpeed);
+        // Use DifferentialDrive, ensuring inputs are not squared as calculations are already done
+        differentialDrive.tankDrive(leftSpeed, rightSpeed, false);
     }
 
     public void setLeftMotorVelocity(double velocity) {
@@ -242,16 +299,16 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void setLeftMotorPosition(double position) {
         // Convert position to velocity for simple control
-        double currentPosition = motorLeft.getPosition().getValueAsDouble();
+        double currentPosition = leftMotor.getPosition().getValueAsDouble();
         double velocity = positionPID.calculate(currentPosition, position);
-        motorLeft.setControl(velocityRequest.withVelocity(velocity));
+        leftMotor.setControl(velocityRequest.withVelocity(velocity));
     }
 
     public void setRightMotorPosition(double position) {
         // Convert position to velocity for simple control
-        double currentPosition = motorRight.getPosition().getValueAsDouble();
+        double currentPosition = rightMotor.getPosition().getValueAsDouble();
         double velocity = positionPID.calculate(currentPosition, position);
-        motorRight.setControl(velocityRequest.withVelocity(velocity));
+        rightMotor.setControl(velocityRequest.withVelocity(velocity));
     }
 
     public void setMotorPosition(double position) {
@@ -265,8 +322,8 @@ public class DriveSubsystem extends SubsystemBase {
         double rotations = distance * ROTATIONS_PER_METER;
         
         // Store starting positions
-        double leftStartPosition = motorLeft.getPosition().getValueAsDouble();
-        double rightStartPosition = motorRight.getPosition().getValueAsDouble();
+        double leftStartPosition = leftMotor.getPosition().getValueAsDouble();
+        double rightStartPosition = rightMotor.getPosition().getValueAsDouble();
         
         // Set target positions for differential turning
         double leftTargetPosition = leftStartPosition + rotations;
@@ -282,13 +339,13 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void driveLeftDistance(double distance) {
         double deltaRotations = distance * ROTATIONS_PER_METER;
-        double targetPosition = motorLeft.getPosition().getValueAsDouble() + deltaRotations;
+        double targetPosition = leftMotor.getPosition().getValueAsDouble() + deltaRotations;
         setLeftMotorPosition(targetPosition);
     }
 
     public void driveRightDistance(double distance) {
         double deltaRotations = distance * ROTATIONS_PER_METER;
-        double targetPosition = motorRight.getPosition().getValueAsDouble() + deltaRotations;
+        double targetPosition = rightMotor.getPosition().getValueAsDouble() + deltaRotations;
         setRightMotorPosition(targetPosition);
     }
 
@@ -298,11 +355,11 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setLeftMotorRPM(double rps) {
-        motorLeft.setControl(velocityRequest.withVelocity(rps));
+        leftMotor.setControl(velocityRequest.withVelocity(rps));
     }
 
     public void setRightMotorRPM(double rps) {
-        motorRight.setControl(velocityRequest.withVelocity(rps));
+        rightMotor.setControl(velocityRequest.withVelocity(rps));
     }
 
     public void setMotorPRM(double rps) {
@@ -311,11 +368,11 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void stopLeftMotor() {
-        motorLeft.setControl(dutyCycleRequest.withOutput(0.0));
+        leftMotor.setControl(dutyCycleRequest.withOutput(0.0));
     }
 
     public void stopRightMotor() {
-        motorRight.setControl(dutyCycleRequest.withOutput(0.0));
+        rightMotor.setControl(dutyCycleRequest.withOutput(0.0));
     }
 
     public void stopMotors() {
@@ -358,49 +415,49 @@ public class DriveSubsystem extends SubsystemBase {
     public void log() {
         // Left Motors
         // Master
-        Logger.recordOutput("Drive/Left/Master/Position", motorLeft.getPosition().getValue());
-        Logger.recordOutput("Drive/Left/Master/Velocity", motorLeft.getVelocity().getValue());
-        Logger.recordOutput("Drive/Left/Master/Acceleration", motorLeft.getAcceleration().getValue());
-        Logger.recordOutput("Drive/Left/Master/Current", motorLeft.getStatorCurrent().getValue());
-        Logger.recordOutput("Drive/Left/Master/Voltage", motorLeft.getSupplyVoltage().getValue());
+        Logger.recordOutput("Drive/Left/Master/Position", leftMotor.getPosition().getValue());
+        Logger.recordOutput("Drive/Left/Master/Velocity", leftMotor.getVelocity().getValue());
+        Logger.recordOutput("Drive/Left/Master/Acceleration", leftMotor.getAcceleration().getValue());
+        Logger.recordOutput("Drive/Left/Master/Current", leftMotor.getStatorCurrent().getValue());
+        Logger.recordOutput("Drive/Left/Master/Voltage", leftMotor.getSupplyVoltage().getValue());
         
         // Follower
-        Logger.recordOutput("Drive/Left/Follower/Position", motorLeftFollower.getPosition().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Velocity", motorLeftFollower.getVelocity().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Acceleration", motorLeftFollower.getAcceleration().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Current", motorLeftFollower.getStatorCurrent().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Voltage", motorLeftFollower.getSupplyVoltage().getValue());
+        Logger.recordOutput("Drive/Left/Follower/Position", leftMotorFollower.getPosition().getValue());
+        Logger.recordOutput("Drive/Left/Follower/Velocity", leftMotorFollower.getVelocity().getValue());
+        Logger.recordOutput("Drive/Left/Follower/Acceleration", leftMotorFollower.getAcceleration().getValue());
+        Logger.recordOutput("Drive/Left/Follower/Current", leftMotorFollower.getStatorCurrent().getValue());
+        Logger.recordOutput("Drive/Left/Follower/Voltage", leftMotorFollower.getSupplyVoltage().getValue());
 
         // Right Motors
         // Master
-        Logger.recordOutput("Drive/Right/Master/Position", motorRight.getPosition().getValue());
-        Logger.recordOutput("Drive/Right/Master/Velocity", motorRight.getVelocity().getValue());
-        Logger.recordOutput("Drive/Right/Master/Acceleration", motorRight.getAcceleration().getValue());
-        Logger.recordOutput("Drive/Right/Master/Current", motorRight.getStatorCurrent().getValue());
-        Logger.recordOutput("Drive/Right/Master/Voltage", motorRight.getSupplyVoltage().getValue());
+        Logger.recordOutput("Drive/Right/Master/Position", rightMotor.getPosition().getValue());
+        Logger.recordOutput("Drive/Right/Master/Velocity", rightMotor.getVelocity().getValue());
+        Logger.recordOutput("Drive/Right/Master/Acceleration", rightMotor.getAcceleration().getValue());
+        Logger.recordOutput("Drive/Right/Master/Current", rightMotor.getStatorCurrent().getValue());
+        Logger.recordOutput("Drive/Right/Master/Voltage", rightMotor.getSupplyVoltage().getValue());
 
         // // Follower
-        Logger.recordOutput("Drive/Right/Follower/Position", motorRightFollower.getPosition().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Velocity", motorRightFollower.getVelocity().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Acceleration", motorRightFollower.getAcceleration().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Current", motorRightFollower.getStatorCurrent().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Voltage", motorRightFollower.getSupplyVoltage().getValue());
+        Logger.recordOutput("Drive/Right/Follower/Position", rightMotorFollower.getPosition().getValue());
+        Logger.recordOutput("Drive/Right/Follower/Velocity", rightMotorFollower.getVelocity().getValue());
+        Logger.recordOutput("Drive/Right/Follower/Acceleration", rightMotorFollower.getAcceleration().getValue());
+        Logger.recordOutput("Drive/Right/Follower/Current", rightMotorFollower.getStatorCurrent().getValue());
+        Logger.recordOutput("Drive/Right/Follower/Voltage", rightMotorFollower.getSupplyVoltage().getValue());
 
         // Wheel-specific logging (combined master + follower data)
         // Left wheel velocity (average of master and follower)
-        double leftWheelVelocity = (motorLeft.getVelocity().getValueAsDouble() + motorLeftFollower.getVelocity().getValueAsDouble()) / 2.0;
+        double leftWheelVelocity = (leftMotor.getVelocity().getValueAsDouble() + leftMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
         Logger.recordOutput("Drive/Wheels/Left/Velocity", leftWheelVelocity);
         
         // Right wheel velocity (average of master and follower)
-        double rightWheelVelocity = (motorRight.getVelocity().getValueAsDouble() + motorRightFollower.getVelocity().getValueAsDouble()) / 2.0;
+        double rightWheelVelocity = (rightMotor.getVelocity().getValueAsDouble() + rightMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
         Logger.recordOutput("Drive/Wheels/Right/Velocity", rightWheelVelocity);
         
         // Left wheel current (sum of master and follower)
-        double leftWheelCurrent = motorLeft.getStatorCurrent().getValueAsDouble() + motorLeftFollower.getStatorCurrent().getValueAsDouble();
+        double leftWheelCurrent = leftMotor.getStatorCurrent().getValueAsDouble() + leftMotorFollower.getStatorCurrent().getValueAsDouble();
         Logger.recordOutput("Drive/Wheels/Left/Current", leftWheelCurrent);
         
         // Right wheel current (sum of master and follower)
-        double rightWheelCurrent = motorRight.getStatorCurrent().getValueAsDouble() + motorRightFollower.getStatorCurrent().getValueAsDouble();
+        double rightWheelCurrent = rightMotor.getStatorCurrent().getValueAsDouble() + rightMotorFollower.getStatorCurrent().getValueAsDouble();
         Logger.recordOutput("Drive/Wheels/Right/Current", rightWheelCurrent);
         
         // Wheel velocity in meters per second (converted from rotations per second)
@@ -417,11 +474,7 @@ public class DriveSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     @Override
     public void periodic() {
-        
         updatePID();
-        
         log();
     }
-    
-
 }

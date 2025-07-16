@@ -21,7 +21,6 @@ import frc.robot.consts;
 public class IntakeSubsystem extends SubsystemBase {
 
     // Motors
-
     private final TalonFX pivotMotor = new TalonFX(consts.CANID.PIVOTMOTOR);
     private final TalonFX rollerMotor = new TalonFX(consts.CANID.ROLLERMOTOR);
     private final CANcoder pivotEncoder = new CANcoder(consts.CANID.PIVOTENCODER);
@@ -84,27 +83,25 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         // Apply configurations
-        var pivotResult = pivotMotor.getConfigurator().apply(pivotConfig);
-        var rollerResult = rollerMotor.getConfigurator().apply(rollerConfig);
+        var pivotResult = motorPivot.getConfigurator().apply(pivotConfig);
+        var rollerResult = motorRoller.getConfigurator().apply(rollerConfig);
         
-        System.out.println("IntakeSubsystem: Pivot motor config result: " + pivotResult);
-        System.out.println("IntakeSubsystem: Roller motor config result: " + rollerResult);
-        System.out.println("IntakeSubsystem: Pivot motor CAN ID: " + consts.CANID.PIVOTMOTOR);
-        System.out.println("IntakeSubsystem: Roller motor CAN ID: " + consts.CANID.ROLLERMOTOR);
-        System.out.println("IntakeSubsystem: Roller PID - kP: " + consts.PID.rollerPID.kP.get() + ", kI: " + consts.PID.rollerPID.kI.get() + ", kD: " + consts.PID.rollerPID.kD.get());
+        // System.out.println("IntakeSubsystem: Pivot motor config result: " + pivotResult);
+        // System.out.println("IntakeSubsystem: Roller motor config result: " + rollerResult);
+        // System.out.println("IntakeSubsystem: Pivot motor CAN ID: " + consts.CANID.MOTOR_PIVOT);
+        // System.out.println("IntakeSubsystem: Roller motor CAN ID: " + consts.CANID.MOTOR_ROLLER);
+        // System.out.println("IntakeSubsystem: Roller PID - kP: " + consts.PID.rollerPID.kP.get() + ", kI: " + consts.PID.rollerPID.kI.get() + ", kD: " + consts.PID.rollerPID.kD.get());
     }
-
-
 
     /**
      * Move pivot to zero position (called by B button)
      */
     public void goToZero() {
-        System.out.println("IntakeSubsystem: goToZero() called");
+        // System.out.println("IntakeSubsystem: goToZero() called");
         targetPosition = zeroPosition;
-        System.out.println("IntakeSubsystem: Moving to zero position: " + targetPosition);
+        // System.out.println("IntakeSubsystem: Moving to zero position: " + targetPosition);
         isHolding = false; // Reset holding state when going to zero
-        System.out.println("IntakeSubsystem: Zero target set - position control active");
+        // System.out.println("IntakeSubsystem: Zero target set - position control active");
     }
 
     /**
@@ -112,22 +109,22 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void startEject() {
         System.out.println("IntakeSubsystem: startEject() called");
-        double speed = consts.INTAKE_ROLLER_SPEED.get() + 20.0;
-        System.out.println("IntakeSubsystem: Starting eject with speed: " + speed);
-        rollerMotor.setControl(velocityRequest.withVelocity(speed));
+        double power = consts.INTAKE_ROLLER_POWER.get();
+        System.out.println("IntakeSubsystem: Starting eject with power: " + power);
+        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isEjecting = true;
         isIntaking = false;
-        System.out.println("IntakeSubsystem: Eject started successfully");
+        // System.out.println("IntakeSubsystem: Eject started successfully");
     }
 
     /**
      * Stop roller eject
      */
     public void stopEject() {
-        System.out.println("IntakeSubsystem: stopEject() called");
-        rollerMotor.setControl(dutyCycleRequest.withOutput(0.0));
+        // System.out.println("IntakeSubsystem: stopEject() called");
+        motorRoller.setControl(dutyCycleRequest.withOutput(0.0));
         isEjecting = false;
-        System.out.println("IntakeSubsystem: Eject stopped");
+        // System.out.println("IntakeSubsystem: Eject stopped");
     }
 
     /**
@@ -135,52 +132,52 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void startIntake() {
         System.out.println("IntakeSubsystem: startIntake() called");
-        double speed = -consts.INTAKE_ROLLER_SPEED.get();
-        System.out.println("IntakeSubsystem: Starting intake with speed: " + speed);
-        rollerMotor.setControl(velocityRequest.withVelocity(speed));
+        double power = -consts.INTAKE_ROLLER_POWER.get();
+        System.out.println("IntakeSubsystem: Starting intake with power: " + power);
+        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isIntaking = true;
         isEjecting = false;
-        System.out.println("IntakeSubsystem: Intake started successfully");
+        // System.out.println("IntakeSubsystem: Intake started successfully");
     }
 
     /**
      * Stop roller intake
      */
     public void stopIntake() {
-        System.out.println("IntakeSubsystem: stopIntake() called");
-        rollerMotor.setControl(dutyCycleRequest.withOutput(0.0));
+        // System.out.println("IntakeSubsystem: stopIntake() called");
+        motorRoller.setControl(dutyCycleRequest.withOutput(0.0));
         isIntaking = false;
-        System.out.println("IntakeSubsystem: Intake stopped");
+        // System.out.println("IntakeSubsystem: Intake stopped");
     }
 
     /**
      * Stop roller movement (stops both intake and eject)
      */
     public void stopRoller() {
-        System.out.println("IntakeSubsystem: stopRoller() called");
-        rollerMotor.setControl(dutyCycleRequest.withOutput(0.0));
+        // System.out.println("IntakeSubsystem: stopRoller() called");
+        motorRoller.setControl(dutyCycleRequest.withOutput(0.0));
         isIntaking = false;
         isEjecting = false;
-        System.out.println("IntakeSubsystem: Roller stopped");
+        // System.out.println("IntakeSubsystem: Roller stopped");
     }
 
     /**
      * Move pivot counterclockwise to elevated position (called by LB button)
      */
     public void elevate() {
-        System.out.println("IntakeSubsystem: elevate() called");
+        // System.out.println("IntakeSubsystem: elevate() called");
         // Move pivot counterclockwise to elevated position (negative value = counterclockwise)
         targetPosition = zeroPosition - consts.INTAKE_ELEVATED_POSITION.get();
-        System.out.println("IntakeSubsystem: Moving counterclockwise to elevated position: " + targetPosition);
+        // System.out.println("IntakeSubsystem: Moving counterclockwise to elevated position: " + targetPosition);
         isHolding = true;
-        System.out.println("IntakeSubsystem: Counterclockwise elevated target set - position control active");
+        // System.out.println("IntakeSubsystem: Counterclockwise elevated target set - position control active");
     }
 
     /**
      * Check if pivot is at zero position
      */
     public boolean isAtZero() {
-        double currentPosition = pivotMotor.getPosition().getValueAsDouble();
+        double currentPosition = motorPivot.getPosition().getValueAsDouble();
         double homePosition = zeroPosition + consts.INTAKE_HOME_POSITION.get();
         double positionError = Math.abs(currentPosition - homePosition);
         return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
@@ -190,7 +187,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Check if pivot is at elevated position
      */
     public boolean isAtElevated() {
-        double currentPosition = pivotMotor.getPosition().getValueAsDouble();
+        double currentPosition = motorPivot.getPosition().getValueAsDouble();
         double elevatedPosition = zeroPosition + consts.INTAKE_ELEVATED_POSITION.get();
         double positionError = Math.abs(currentPosition - elevatedPosition);
         return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
@@ -200,7 +197,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Check if pivot is at target position
      */
     public boolean isAtTarget() {
-        double currentPosition = pivotMotor.getPosition().getValueAsDouble();
+        double currentPosition = motorPivot.getPosition().getValueAsDouble();
         double positionError = Math.abs(currentPosition - targetPosition);
         return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
     }
@@ -219,6 +216,13 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isHolding() {
         return isHolding;
+    }
+
+    /**
+     * Returns whether the roller is currently intaking
+     */
+    public boolean isIntaking() {
+        return isIntaking;
     }
 
     public void goToEjectPosition() {
@@ -256,26 +260,26 @@ public class IntakeSubsystem extends SubsystemBase {
         boolean elevatedPositionChanged = consts.INTAKE_ELEVATED_POSITION.hasChanged();
 
         if (homePositionChanged || elevatedPositionChanged) {
-            System.out.println("IntakeSubsystem: Position constants changed - updating target");
+            // System.out.println("IntakeSubsystem: Position constants changed - updating target");
             
             if (isHolding) {
                 // If currently holding (LB position), update to new elevated position (counterclockwise)
                 targetPosition = zeroPosition + consts.INTAKE_ELEVATED_POSITION.get();
-                System.out.println("IntakeSubsystem: Updated LB counterclockwise target to: " + targetPosition);
+                // System.out.println("IntakeSubsystem: Updated LB counterclockwise target to: " + targetPosition);
             } else {
                 // If not holding, update to new home position
                 targetPosition = zeroPosition - consts.INTAKE_HOME_POSITION.get();
-                System.out.println("IntakeSubsystem: Updated home target to: " + targetPosition);
+                // System.out.println("IntakeSubsystem: Updated home target to: " + targetPosition);
             }
         }
     }
 
     public void log() {
         // Pivot motor logging
-        Logger.recordOutput("Intake/Pivot/Position", pivotMotor.getPosition().getValue());
-        Logger.recordOutput("Intake/Pivot/Velocity", pivotMotor.getVelocity().getValue());
-        Logger.recordOutput("Intake/Pivot/Current", pivotMotor.getStatorCurrent().getValue());
-        Logger.recordOutput("Intake/Pivot/Voltage", pivotMotor.getSupplyVoltage().getValue());
+        Logger.recordOutput("Intake/Pivot/Position", motorPivot.getPosition().getValue());
+        Logger.recordOutput("Intake/Pivot/Velocity", motorPivot.getVelocity().getValue());
+        Logger.recordOutput("Intake/Pivot/Current", motorPivot.getStatorCurrent().getValue());
+        Logger.recordOutput("Intake/Pivot/Voltage", motorPivot.getSupplyVoltage().getValue());
         Logger.recordOutput("Intake/Pivot/ZeroPosition", zeroPosition);
         Logger.recordOutput("Intake/Pivot/TargetPosition", targetPosition);
         Logger.recordOutput("Intake/Pivot/IsAtZero", isAtZero());
@@ -285,16 +289,16 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Pivot/CANcoderPosition", pivotEncoder.getAbsolutePosition().getValue());
 
         // Roller motor logging
-        Logger.recordOutput("Intake/Roller/Velocity", rollerMotor.getVelocity().getValue());
-        Logger.recordOutput("Intake/Roller/StatorCurrent", rollerMotor.getStatorCurrent().getValue());
-        Logger.recordOutput("Intake/Roller/SupplyCurrent", rollerMotor.getSupplyCurrent().getValue());
-        Logger.recordOutput("Intake/Roller/Voltage", rollerMotor.getSupplyVoltage().getValue());
+        Logger.recordOutput("Intake/Roller/Velocity", motorRoller.getVelocity().getValue());
+        Logger.recordOutput("Intake/Roller/StatorCurrent", motorRoller.getStatorCurrent().getValue());
+        Logger.recordOutput("Intake/Roller/SupplyCurrent", motorRoller.getSupplyCurrent().getValue());
+        Logger.recordOutput("Intake/Roller/Voltage", motorRoller.getSupplyVoltage().getValue());
         Logger.recordOutput("Intake/Roller/State", getRollerState());
         Logger.recordOutput("Intake/Roller/IsIntaking", isIntaking);
         Logger.recordOutput("Intake/Roller/IsEjecting", isEjecting);
 
         // Tunable constants logging
-        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_SPEED.get());
+        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_POWER.get());
         Logger.recordOutput("Intake/Constants/HoldOffset", consts.INTAKE_HOLD_OFFSET.get());
         Logger.recordOutput("Intake/Constants/ElevatedPosition", consts.INTAKE_ELEVATED_POSITION.get());
         Logger.recordOutput("Intake/Constants/PositionTolerance", consts.INTAKE_POSITION_TOLERANCE.get());
@@ -302,10 +306,10 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Constants/PivotSpeed", consts.INTAKE_PIVOT_SPEED.get());
         
         // Enhanced pivot position logging
-        Logger.recordOutput("Intake/Pivot/CurrentPosition", pivotMotor.getPosition().getValue());
+        Logger.recordOutput("Intake/Pivot/CurrentPosition", motorPivot.getPosition().getValue());
         Logger.recordOutput("Intake/Pivot/ZeroPosition", zeroPosition);
         Logger.recordOutput("Intake/Pivot/TargetPosition", targetPosition);
-        Logger.recordOutput("Intake/Pivot/PositionError", Math.abs(pivotMotor.getPosition().getValueAsDouble() - targetPosition));
+        Logger.recordOutput("Intake/Pivot/PositionError", Math.abs(motorPivot.getPosition().getValueAsDouble() - targetPosition));
     }
 
     @Override
@@ -314,20 +318,20 @@ public class IntakeSubsystem extends SubsystemBase {
         updateTargetPosition();
         
         // Apply continuous position control to pivot motor
-        pivotMotor.setControl(positionRequest.withPosition(targetPosition));
+        motorPivot.setControl(positionRequest.withPosition(targetPosition));
         
         log();
         
         // Debug: Show motor data
-        double pivotPosition = pivotMotor.getPosition().getValueAsDouble();
-        double rollerVelocity = rollerMotor.getVelocity().getValueAsDouble();
-        double rollerCurrent = rollerMotor.getStatorCurrent().getValueAsDouble();
+        double pivotPosition = motorPivot.getPosition().getValueAsDouble();
+        double rollerVelocity = motorRoller.getVelocity().getValueAsDouble();
+        double rollerCurrent = motorRoller.getStatorCurrent().getValueAsDouble();
         
-        System.out.println("=== MOTOR STATUS ===");
-        System.out.println("Pivot Position: " + pivotPosition + " rotations");
-        System.out.println("Pivot Target: " + targetPosition + " rotations");
-        System.out.println("Roller Velocity: " + rollerVelocity + " RPS");
-        System.out.println("Roller Current: " + rollerCurrent + " Amps");
-        System.out.println("===================");
+        // System.out.println("=== MOTOR STATUS ===");
+        // System.out.println("Pivot Position: " + pivotPosition + " rotations");
+        // System.out.println("Pivot Target: " + targetPosition + " rotations");
+        // System.out.println("Roller Velocity: " + rollerVelocity + " RPS");
+        // System.out.println("Roller Current: " + rollerCurrent + " Amps");
+        // System.out.println("===================");
     }
 }
