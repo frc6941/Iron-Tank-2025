@@ -55,7 +55,7 @@ public class SimpleCoralAuto extends Command {
     if(timer.get() < drive_seconds)
     {
         driveSubsystem.driveArcade(0.3, 0.0,false);
-        intakeSubsystem.setWantedState(WantedState.ZERO);
+        intakeSubsystem.setWantedState(WantedState.HOLD);
     }
     /**
      * Once the timer is greater than drive_seconds but less than exjest seconds,
