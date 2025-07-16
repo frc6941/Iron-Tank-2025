@@ -25,7 +25,7 @@ Coming soon
 ### Overview
 This is the first beta release of the control software built for Sanya off-season FIRST Robotics Competition and designed for implementation on team Everybot 9994
 This version of code includes three subsystem, designed to control the robot's driving, intake, and climber.
-The robot should be able to move to desired position, 
+The robot should be able to move to desired position, intake coral pieces, elevate it to desired height, and by that place the game piece on the coral stage. 
 ### Key Features
 
 **1. Robot Framework (WPILib Command-Based)**
