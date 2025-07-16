@@ -350,7 +350,11 @@ public class IntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Coral detection logic
+        boolean prevHasCoral = hasCoral;
         hasCoral = detectCoral();
+        if (!prevHasCoral && hasCoral) {
+            edu.wpi.first.wpilibj.DriverStation.reportWarning("Coral detected by intake!", false);
+        }
 
         // Process the current state of the intake subsystem
         processWantedState();
