@@ -2,14 +2,18 @@ package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
@@ -17,9 +21,9 @@ import frc.robot.consts;
 public class IntakeSubsystem extends SubsystemBase {
 
     // Motors
-
-    private final TalonFX motorPivot = new TalonFX(consts.CANID.MOTOR_PIVOT);
-    private final TalonFX motorRoller = new TalonFX(consts.CANID.MOTOR_ROLLER);
+    private final TalonFX pivotMotor = new TalonFX(consts.CANID.PIVOTMOTOR);
+    private final TalonFX rollerMotor = new TalonFX(consts.CANID.ROLLERMOTOR);
+    private final CANcoder pivotEncoder = new CANcoder(consts.CANID.PIVOTENCODER);
 
     // Controls
     private final PositionVoltage positionRequest = new PositionVoltage(0);
@@ -30,13 +34,18 @@ public class IntakeSubsystem extends SubsystemBase {
     
     // State variables
     private double zeroPosition = 0.0; // Current zero position (set by Y button)
-    private double targetPosition = -20; // Current target position for position control
+    private double targetPosition = 0.0; // Current target position for position control
     private boolean isIntaking = false; // Whether the roller is currently intaking
     private boolean isEjecting = false; // Whether the roller is currently ejecting
     private boolean isHolding = false; // Whether the pivot is in hold position
 
     public IntakeSubsystem() {
         configureMotors();
+        CANcoderConfiguration CANcoder = new CANcoderConfiguration();
+        CANcoder.MagnetSensor.MagnetOffset = -0.382080078125; // Set your desired offset here
+        CANcoder.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        pivotEncoder.getConfigurator().apply(CANcoder);
+
     }
 
     public void configureMotors() {
@@ -47,6 +56,9 @@ public class IntakeSubsystem extends SubsystemBase {
         pivotSlot0Configs.kD = consts.PID.pivotPID.kD.get();
 
         TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
+        pivotConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+        pivotConfig.Feedback.FeedbackRemoteSensorID = 8;
+        pivotConfig.Feedback.RotorToSensorRatio = 12.0;
         pivotConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         pivotConfig.Slot0 = pivotSlot0Configs;
@@ -82,24 +94,6 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     /**
-     * Set current position as zero (called by Y button)
-     */
-    public void setZeroPosition() {
-        zeroPosition = motorPivot.getPosition().getValueAsDouble();
-    }
-
-    /**
-     * Move pivot to zero position (called by first B press - Home)
-     */
-    public void goToHome() {
-        // System.out.println("IntakeSubsystem: goToHome() called");
-        targetPosition = zeroPosition + consts.INTAKE_HOME_POSITION.get();
-        // System.out.println("IntakeSubsystem: Moving to target position: " + targetPosition);
-        isHolding = false; // Reset holding state when going to home
-        // System.out.println("IntakeSubsystem: Home target set - position control active");
-    }
-
-    /**
      * Move pivot to zero position (called by B button)
      */
     public void goToZero() {
@@ -114,10 +108,10 @@ public class IntakeSubsystem extends SubsystemBase {
      * Start roller eject (clockwise) - called by LT button
      */
     public void startEject() {
-        // System.out.println("IntakeSubsystem: startEject() called");
-        double speed = consts.INTAKE_ROLLER_SPEED.get() + 20.0;
-        // System.out.println("IntakeSubsystem: Starting eject with speed: " + speed);
-        motorRoller.setControl(velocityRequest.withVelocity(speed));
+        System.out.println("IntakeSubsystem: startEject() called");
+        double power = consts.INTAKE_ROLLER_POWER.get();
+        System.out.println("IntakeSubsystem: Starting eject with power: " + power);
+        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isEjecting = true;
         isIntaking = false;
         // System.out.println("IntakeSubsystem: Eject started successfully");
@@ -137,10 +131,10 @@ public class IntakeSubsystem extends SubsystemBase {
      * Start roller intake (counterclockwise) - called by RB button
      */
     public void startIntake() {
-        // System.out.println("IntakeSubsystem: startIntake() called");
-        double speed = -consts.INTAKE_ROLLER_SPEED.get();
-        // System.out.println("IntakeSubsystem: Starting intake with speed: " + speed);
-        motorRoller.setControl(velocityRequest.withVelocity(speed));
+        System.out.println("IntakeSubsystem: startIntake() called");
+        double power = -consts.INTAKE_ROLLER_POWER.get();
+        System.out.println("IntakeSubsystem: Starting intake with power: " + power);
+        rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isIntaking = true;
         isEjecting = false;
         // System.out.println("IntakeSubsystem: Intake started successfully");
@@ -224,6 +218,22 @@ public class IntakeSubsystem extends SubsystemBase {
         return isHolding;
     }
 
+    /**
+     * Returns whether the roller is currently intaking
+     */
+    public boolean isIntaking() {
+        return isIntaking;
+    }
+
+    public void goToEjectPosition() {
+        System.out.println("IntakeSubsystem: goToEjectPosition() called");
+        // Move pivot counterclockwise to eject position (negative value = counterclockwise)
+        targetPosition = zeroPosition - consts.INTAKE_EJECT_POSITION.get();
+        isHolding = false;
+        System.out.println("IntakeSubsystem: Moving counterclockwise to eject position: " + targetPosition);
+        System.out.println("IntakeSubsystem: Eject target set - position control active");
+    }
+
     private void updatePID() {
         // Check if any PID values have changed
         boolean pivotPIDChanged = consts.PID.pivotPID.kP.hasChanged() || consts.PID.pivotPID.kI.hasChanged() || consts.PID.pivotPID.kD.hasChanged();
@@ -276,6 +286,7 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Pivot/IsAtElevated", isAtElevated());
         Logger.recordOutput("Intake/Pivot/IsAtTarget", isAtTarget());
         Logger.recordOutput("Intake/Pivot/IsHolding", isHolding);
+        Logger.recordOutput("Intake/Pivot/CANcoderPosition", pivotEncoder.getAbsolutePosition().getValue());
 
         // Roller motor logging
         Logger.recordOutput("Intake/Roller/Velocity", motorRoller.getVelocity().getValue());
@@ -287,7 +298,7 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Roller/IsEjecting", isEjecting);
 
         // Tunable constants logging
-        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_SPEED.get());
+        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_POWER.get());
         Logger.recordOutput("Intake/Constants/HoldOffset", consts.INTAKE_HOLD_OFFSET.get());
         Logger.recordOutput("Intake/Constants/ElevatedPosition", consts.INTAKE_ELEVATED_POSITION.get());
         Logger.recordOutput("Intake/Constants/PositionTolerance", consts.INTAKE_POSITION_TOLERANCE.get());

@@ -1,21 +1,53 @@
+
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.Logger;
+
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.consts;
 
 public class ClimberSubsystem extends SubsystemBase {
-    // Define any motors, sensors, or other components needed for the climber subsystem here
+    private final TalonFX climberMotor = new TalonFX(consts.CANID.CLIMBER_MOTOR);
+    private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
+    private final VoltageOut voltageRequest = new VoltageOut(0);
 
     public ClimberSubsystem() {
-        // Constructor for ClimberSubsystem
-        // Initialize any components or configurations here
+        configureMotor();
     }
 
-    // Add methods to control the climber, such as extending or retracting the climber arms
-    public void extendArms() {
-        // Logic to extend the climber arms
+    public void configureMotor() {
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // Counterclockwise is positive
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        climberMotor.getConfigurator().apply(config);
     }
 
-    public void retractArms() {
-        // Logic to retract the climber arms
+    /** Set climber voltage (tunable) */
+    public void setClimberVoltage() {
+        double voltage = consts.CLIMBER_VOLTAGE.get();
+        System.out.println("ClimberSubsystem: setClimberVoltage() called, voltage: " + voltage);
+        climberMotor.setControl(voltageRequest.withOutput(voltage));
+        Logger.recordOutput("Climber/SetVoltage", voltage);
+    }
+
+    /** Stop climbing */
+    public void stopClimb() {
+        climberMotor.setControl(dutyCycleRequest.withOutput(0.0));
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput("Climber/Position", climberMotor.getPosition().getValue());
+        Logger.recordOutput("Climber/Velocity", climberMotor.getVelocity().getValue());
+        Logger.recordOutput("Climber/Current", climberMotor.getStatorCurrent().getValue());
+        Logger.recordOutput("Climber/Voltage", climberMotor.getSupplyVoltage().getValue());
     }
 }
