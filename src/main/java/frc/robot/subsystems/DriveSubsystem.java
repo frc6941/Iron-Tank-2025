@@ -26,7 +26,6 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -36,7 +35,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.consts;
 import frc.robot.consts.Drive.CheesyDrive;
-import frc.robot.utils.TunableNumber;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -203,6 +201,11 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXConfig.MotorOutput.Inverted = inverted? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
         talonFXConfig.MotorOutput.NeutralMode = defaultNeutralMode;
         talonFXConfig.Slot0 = slot0;
+        // Apply current limits from constants
+        talonFXConfig.CurrentLimits.SupplyCurrentLimit = consts.Limits.Chassis.DRIVE_SUPPLY_CURRENT_LIMIT;
+        talonFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        talonFXConfig.CurrentLimits.StatorCurrentLimit = consts.Limits.Chassis.DRIVE_STATOR_CURRENT_LIMIT;
+        talonFXConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         return talonFXConfig;
     }
 
@@ -302,6 +305,7 @@ public class DriveSubsystem extends SubsystemBase {
         // Use DifferentialDrive, ensuring inputs are not squared as calculations are already done
         differentialDrive.tankDrive(leftSpeed, rightSpeed, false);
     }
+    
 
     public static double getDistance(TalonFX motor) {
         return motor.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION;

@@ -72,7 +72,7 @@ public class consts {
     // *** NEW: Constants for the Cheesy Drive implementation ***
     public static final class Drive {
         // Deadband for the joysticks. Any input below this value will be treated as zero.
-        public static final double DEADBAND = 0.05;
+        public static final double DEADBAND = 0.1;
         
         // A threshold for when the robot is considered "slow" enough to allow turning in place.
         public static final double QUICK_TURN_THRESHOLD = 0.2;
@@ -114,9 +114,18 @@ public class consts {
             public static final double PIVOT_MAX_ANGLE = 90.0; // Maximum angle in degrees
             public static final double PIVOT_MIN_ANGLE = 0.0; // Minimum angle in degrees
             public static final double HOLD_ANGLE_OFFSET = 0.5; // Hold position offset from zero in rotations
-            public static final double POSITION_TOLERANCE = 0.05; // Position tolerance in rotations
 
             public static final double L1 = 100; // Height in degrees for L1 state
+
+            public static final TunableNumber ROLLER_POWER = new TunableNumber("intake_roller_power", 1.0);
+            public static final TunableNumber HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
+            public static final TunableNumber ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
+            public static final TunableNumber POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
+            public static final TunableNumber HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
+            public static final TunableNumber PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
+            public static final TunableNumber EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
+            public static final TunableNumber PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
+            public static final TunableNumber ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
 
             // Minimum velocity to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 1.0);
@@ -143,8 +152,10 @@ public class consts {
     public static final class Limits {
         // ... (no changes here)
         public static final class Chassis {
-            public static final double MAX_VELOCITY = 1.0;
+            public static final double MAX_VELOCITY = 10.0;
             public static final double MAX_OUTPUT = 0.8;
+            public static final double DRIVE_SUPPLY_CURRENT_LIMIT = 40.0;
+            public static final double DRIVE_STATOR_CURRENT_LIMIT = 40.0;
         }
 
         public static final class Intake {
@@ -161,15 +172,6 @@ public class consts {
      * ============================== */
     // ... (no changes here)
     public static final boolean TUNING = true;
-    public static final TunableNumber INTAKE_ROLLER_POWER = new TunableNumber("intake_roller_power", 1.0);
-    public static final TunableNumber INTAKE_HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
-    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
-    public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
-    public static final TunableNumber INTAKE_HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
-    public static final TunableNumber INTAKE_PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
-    public static final TunableNumber INTAKE_EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
-    public static final TunableNumber INTAKE_PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
-    public static final TunableNumber INTAKE_ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
     public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0);
     public static final TunableNumber CLIMBER_START_POSITION = new TunableNumber("climber_start_position", -18.0); // Set default as needed
     public static final TunableNumber CLIMBER_ZERO_POSITION = new TunableNumber("climber_zero_position", -22.632812); // Set default as needed

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.Vector;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -20,8 +22,6 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.consts;
 import frc.robot.consts.Limits.Intake;
-
-// TODO: Auto Intake Auto Eject based on current
 
 /*
  * Positions
@@ -51,6 +51,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private CurrentState currentState = CurrentState.IDLE; // Current state of the intake subsystem
     private WantedState wantedState = WantedState.ZERO; // Desired state of the intake subsystem
     private IntakePosition intakePosition = IntakePosition.ZERO; // Current position of the intake subsystem
+    private Vector<WantedState> scheduledTasks = new Vector<WantedState>(); // Scheduled tasks for the intake subsystem
     private boolean hasCoral = false;
 
     public IntakeSubsystem() {
@@ -112,7 +113,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean detectCoral() {
         // If the roller does not have a voltage applied, it is impossible to hold a coral so we short circuit this check
-        if (motorRoller.getSupplyVoltage().getValueAsDouble() < consts.INTAKE_ROLLER_VOLTAGE.get() / 2) {
+        if (motorRoller.getSupplyVoltage().getValueAsDouble() < consts.Superstructures.Intake.ROLLER_VOLTAGE.get() / 2) {
             return false;
         }
 
@@ -139,7 +140,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Start roller intake (counterclockwise) - called by RB button
      */
     public void intake() {
-        motorRoller.setControl(dutyCycleRequest.withOutput(-consts.INTAKE_ROLLER_POWER.get()));        
+        motorRoller.setControl(dutyCycleRequest.withOutput(-consts.Superstructures.Intake.ROLLER_POWER.get()));        
     }
 
     /**
@@ -153,7 +154,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Start roller eject (clockwise) - called by LT button
      */
     public void eject() {
-        motorRoller.setControl(dutyCycleRequest.withOutput(consts.INTAKE_ROLLER_POWER.get()));
+        motorRoller.setControl(dutyCycleRequest.withOutput(consts.Superstructures.Intake.ROLLER_POWER.get()));
     }
 
     /**
@@ -168,14 +169,14 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void elevate() {
         // Move pivot counterclockwise to elevated position (negative value = counterclockwise)
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.INTAKE_ELEVATED_POSITION.get()));
+        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.Superstructures.Intake.ELEVATED_POSITION.get()));
     }
 
     /**
      * Move pivot counterclockwise to eject position
      */
     public void goToEjectPosition() {
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.INTAKE_EJECT_POSITION.get()));
+        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.Superstructures.Intake.EJECT_POSITION.get()));
     }
 
     /**
@@ -183,9 +184,9 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtZero() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double homePosition = zeroPosition + consts.INTAKE_HOME_POSITION.get();
+        double homePosition = zeroPosition + consts.Superstructures.Intake.HOME_POSITION.get();
         double positionError = Math.abs(currentPosition - homePosition);
-        return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
+        return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
     /**
@@ -193,9 +194,9 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtHoldingPosition() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double holdingPosition = zeroPosition + consts.INTAKE_HOME_POSITION.get() + consts.INTAKE_HOLD_OFFSET.get();
+        double holdingPosition = zeroPosition + consts.Superstructures.Intake.HOME_POSITION.get() + consts.Superstructures.Intake.HOLD_OFFSET.get();
         double positionError = Math.abs(currentPosition - holdingPosition);
-        return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
+        return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
     /**
@@ -203,9 +204,9 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtElevated() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double elevatedPosition = zeroPosition + consts.INTAKE_ELEVATED_POSITION.get();
+        double elevatedPosition = zeroPosition + consts.Superstructures.Intake.ELEVATED_POSITION.get();
         double positionError = Math.abs(currentPosition - elevatedPosition);
-        return positionError < consts.INTAKE_POSITION_TOLERANCE.get();
+        return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
     public boolean isShootFinished() {
@@ -217,7 +218,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void setWantedState(WantedState state) {
-        wantedState = state;
+        scheduledTasks.add(state); // Add the state to the scheduled tasks
     }
 
     public void processWantedState() {
@@ -225,6 +226,8 @@ public class IntakeSubsystem extends SubsystemBase {
         if (currentState != CurrentState.IDLE) {
             return;
         }
+
+        wantedState = scheduledTasks.remove(0); // Get the first scheduled task
 
         switch (wantedState) {
             case INTAKE:
@@ -269,6 +272,8 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If the eject timer has expired, stop the eject
                 if (timer.hasElapsed(consts.Superstructures.Intake.EJECT_TIME.get())) {
                     stopEject();
+                    timer.stop();
+                    hasCoral = false; // Reset coral detection after ejecting
                     currentState = CurrentState.IDLE; // No scheduled task, so we go to default state
                     wantedState = WantedState.ZERO; // After ejecting, we want to go to zero position
                 } else {
@@ -280,6 +285,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If we reach holding point, go IDLE
                 if (isAtHoldingPosition()) {
                     currentState = CurrentState.IDLE;
+                    intakePosition = IntakePosition.HOLD; // Update intake position to holding
                 } else {
                     goToEjectPosition();
                 }
@@ -288,6 +294,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If the pivot is at the elevated position, turn to IDLE
                 if (isAtElevated()) {
                     currentState = CurrentState.IDLE;
+                    intakePosition = IntakePosition.ELEVATE; // Update intake position to elevated
                 } else {
                     elevate();
                 }
@@ -296,6 +303,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If the pivot is at the zero position, turn to IDLE
                 if (isAtZero()) {
                     currentState = CurrentState.IDLE;
+                    intakePosition = IntakePosition.ZERO; // Update intake position to zero
                 } else {
                     goToZero();
                 }
@@ -333,14 +341,6 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Roller/StatorCurrent", motorRoller.getStatorCurrent().getValue());
         Logger.recordOutput("Intake/Roller/SupplyCurrent", motorRoller.getSupplyCurrent().getValue());
         Logger.recordOutput("Intake/Roller/Voltage", motorRoller.getSupplyVoltage().getValue());
-
-        // Tunable constants logging
-        Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_POWER.get());
-        Logger.recordOutput("Intake/Constants/HoldOffset", consts.INTAKE_HOLD_OFFSET.get());
-        Logger.recordOutput("Intake/Constants/ElevatedPosition", consts.INTAKE_ELEVATED_POSITION.get());
-        Logger.recordOutput("Intake/Constants/PositionTolerance", consts.INTAKE_POSITION_TOLERANCE.get());
-        Logger.recordOutput("Intake/Constants/HomePosition", consts.INTAKE_HOME_POSITION.get());
-        Logger.recordOutput("Intake/Constants/PivotSpeed", consts.INTAKE_PIVOT_SPEED.get());
         
         // Enhanced pivot position logging
         Logger.recordOutput("Intake/Pivot/CurrentPosition", motorPivot.getPosition().getValue());
@@ -353,7 +353,11 @@ public class IntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Coral detection logic
+        boolean prevHasCoral = hasCoral;
         hasCoral = detectCoral();
+        if (!prevHasCoral && hasCoral) {
+            edu.wpi.first.wpilibj.DriverStation.reportWarning("Coral detected by intake!", false);
+        }
 
         // Process the current state of the intake subsystem
         processWantedState();
