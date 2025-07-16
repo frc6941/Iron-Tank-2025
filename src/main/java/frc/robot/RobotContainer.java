@@ -11,12 +11,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.subsystems.IntakeSubsystem.WantedState;
+
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem driveSubsystem = new DriveSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
+  private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
 
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
@@ -55,39 +57,37 @@ public class RobotContainer {
     // B button - Move pivot back to zero position
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
-      intakeSubsystem.goToZero();
+      intakeSubsystem.setWantedState(WantedState.ZERO);
     }));
 
     // Left Bumper (LB) - Elevate pivot
     mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
-      intakeSubsystem.elevate();
+      intakeSubsystem.setWantedState(WantedState.ELEVATE);
     }));
 
-    // Left Trigger (LT) - Elevate pivot
-    mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== LT PRESSED - Elevating pivot ===");
-      intakeSubsystem.goToEjectPosition();
-    }));
+    // Left Trigger (LT)
+    // We don't need this anymore - this should be auto-processed
+    // mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
+    //   System.out.println("=== LT PRESSED - Elevating pivot ===");
+    //   intakeSubsystem.goToEjectPosition();
+    // }));
 
     // Right Trigger (RT) - Eject while held
-    mainController.rightTrigger().whileTrue(intakeSubsystem.run(() -> {
+    mainController.rightTrigger().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== RT HELD - Ejecting ===");
-      intakeSubsystem.startEject();
+      intakeSubsystem.setWantedState(WantedState.EJECT);;
     }));
-    mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== RT RELEASED - Stopping eject ===");
-      intakeSubsystem.stopEject();
-    }));
+    // This is auto-processed, so we don't need a release command
+    // mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
+    //   System.out.println("=== RT RELEASED - Stopping eject ===");
+    //   intakeSubsystem.stopEject();
+    // }));
 
-    // Right Bumper (RB) - Toggle intake (first press: start, second: stop)
-    mainController.rightBumper().toggleOnTrue(intakeSubsystem.runOnce(() -> {
+    // Right Bumper (RB) - Start intake, auto stop
+    mainController.rightBumper().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
-      if (!intakeSubsystem.isIntaking()) {
-        intakeSubsystem.startIntake();
-      } else {
-        intakeSubsystem.stopIntake();
-      }
+      intakeSubsystem.setWantedState(WantedState.INTAKE);
     }));
 
     // Climber Controls

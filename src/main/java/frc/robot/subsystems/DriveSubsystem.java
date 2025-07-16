@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.consts;
-import frc.robot.utils.TunableNumber;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -42,8 +41,6 @@ public class DriveSubsystem extends SubsystemBase {
     // *** NEW: State variables for Cheesy Drive logic ***
     private double mOldWheel = 0.0;
     private double mNegInertiaAccumulator = 0.0;
-
-    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
 
     public DriveSubsystem() {
         // Configure the motors
