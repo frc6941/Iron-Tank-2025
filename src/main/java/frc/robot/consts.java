@@ -1,11 +1,19 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.utils.TunableNumber;
 
 /*
  * T0 Constants that are either measured, tuned, or set by the team.
  */
 public class consts {
+    //Robot
+    public static final class Chassis {
+        public static final double TRACK_WIDTH = 10;
+        
+    }
+
+
 
     /* =============================== |
      *             CAN ID              |
