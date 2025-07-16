@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.consts;
-import frc.robot.consts.Limits.Intake;
 
 /*
  * Positions
@@ -207,14 +206,6 @@ public class IntakeSubsystem extends SubsystemBase {
         double elevatedPosition = zeroPosition + consts.Superstructures.Intake.ELEVATED_POSITION.get();
         double positionError = Math.abs(currentPosition - elevatedPosition);
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
-    }
-
-    public boolean isShootFinished() {
-        if (currentState == CurrentState.IDLE) { 
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void setWantedState(WantedState state) {

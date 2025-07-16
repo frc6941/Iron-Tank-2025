@@ -11,26 +11,10 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.controllers.PPLTVController;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.consts;
@@ -66,55 +50,11 @@ public class DriveSubsystem extends SubsystemBase {
     public DriveSubsystem() {
         // Configure the motors
         configureMotors();
-
-        RobotConfig autoConfig  = null;
-        try{
-        autoConfig = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-        // Handle exception as needed
-        e.printStackTrace();
-        }
-
-        // Configure AutoBuilder last
-        AutoBuilder.configure(
-            this::getPose, // Robot pose supplier
-            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-            this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
-            autoConfig, // The robot configuration
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            this // Reference to this subsystem to set requirements
-        );
-
     }
 
     public void driveArcade(double xSpeed, double zRotation, boolean squared) {
         differentialDrive.arcadeDrive(xSpeed, zRotation, squared);
       }
-    
-    public Command followPathCommand(String pathName) {
-        try {
-            // Load path from PathPlanner
-            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-            
-            // Create the command to follow the path
-            return AutoBuilder.followPath(path);
-        } catch (Exception e) {
-            DriverStation.reportError("Error loading path: " + e.getMessage(), e.getStackTrace());
-            return Commands.none();
-        }
-    }
     
 
     // Custom motor controller class to wrap TalonFX for DifferentialDrive
@@ -291,44 +231,6 @@ public class DriveSubsystem extends SubsystemBase {
         differentialDrive.tankDrive(leftSpeed, rightSpeed, false);
     }
     
-
-    public static double getDistance(TalonFX motor) {
-        return motor.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION;
-    }
-
-    DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(consts.Superstructures.Chassis.TRACK_WIDTH);
-
-    DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
-        gyro.getRotation2d(),
-        getDistance(motorLeft),
-        getDistance(motorRight));
-
-    public Pose2d getPose() {
-        return odometry.getPoseMeters();
-    }
-
-    public void updateOdometry(){
-        var gyroAngle = gyro.getRotation2d();
-        odometry.update(gyroAngle, getDistance(motorLeft),getDistance(motorRight));
-    }
-
-    public void resetPose(Pose2d pose) {
-        odometry.resetPosition(gyro.getRotation2d(), getDistance(motorLeft),getDistance(motorRight), pose);
-    }
-
-    public ChassisSpeeds getRobotRelativeSpeeds() {
-        DifferentialDriveWheelSpeeds speeds = new DifferentialDriveWheelSpeeds(
-            Units.rotationsToRadians(motorLeft.getVelocity().getValueAsDouble()), 
-            Units.rotationsToRadians(motorRight.getVelocity().getValueAsDouble()));
-        return kinematics.toChassisSpeeds(speeds);
-    }
-
-    public void driveRobotRelative(ChassisSpeeds speeds) {
-        DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
-        setLeftMotorVelocity(wheelSpeeds.leftMetersPerSecond);
-        setRightMotorVelocity(wheelSpeeds.rightMetersPerSecond);
-    }
-
     public void setLeftMotorVelocity(double velocity) {
         double targetRPS = velocity * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
         setLeftMotorRPM(targetRPS);
@@ -449,15 +351,6 @@ public class DriveSubsystem extends SubsystemBase {
         }
     }
 
-    public static boolean isDriving(){
-        if (getDistance(motorLeft) > 0 && getDistance(motorRight) > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    
     public void log() {
         // Left Motors
         // Master
@@ -522,8 +415,5 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         updatePID();
         log();
-        updateOdometry();
-
-        
     }
 }
