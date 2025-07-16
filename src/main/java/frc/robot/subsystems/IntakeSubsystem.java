@@ -82,9 +82,8 @@ public class IntakeSubsystem extends SubsystemBase {
         rollerConfig.CurrentLimits.StatorCurrentLimit = consts.Limits.Intake.ROLLER_STATOR_CURRENT_LIMIT;
         rollerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
-        // Apply configurations
-        var pivotResult = motorPivot.getConfigurator().apply(pivotConfig);
-        var rollerResult = motorRoller.getConfigurator().apply(rollerConfig);
+        motorPivot.getConfigurator().apply(pivotConfig);
+        motorRoller.getConfigurator().apply(rollerConfig);
         
         // System.out.println("IntakeSubsystem: Pivot motor config result: " + pivotResult);
         // System.out.println("IntakeSubsystem: Roller motor config result: " + rollerResult);

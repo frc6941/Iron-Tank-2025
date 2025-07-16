@@ -16,6 +16,8 @@ public class RobotContainer {
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);  
 
+  private boolean climberReadyToClimb = false;
+
   public RobotContainer() {
     configureBindings();
   }
@@ -82,12 +84,17 @@ public class RobotContainer {
 
     // Climber Controls
     mainController.x().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== X BUTTON PRESSED - Start climbing ===");
-      climberSubsystem.setClimberVoltage();
+      if (!climberSubsystem.isAtStartPosition()) {
+        System.out.println("=== X BUTTON PRESSED - Move to start climb position ===");
+        climberSubsystem.goToStartClimb();
+      } else {
+        System.out.println("=== X BUTTON PRESSED - Start climbing for 5 seconds ===");
+        climberSubsystem.startClimbFor5Sec();
+      }
     }));
     mainController.a().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== A BUTTON PRESSED - Stop climbing ===");
-      climberSubsystem.stopClimb();
+      System.out.println("=== A BUTTON PRESSED - Move to zero position ===");
+      climberSubsystem.goToZero();
     }));
   }
 
