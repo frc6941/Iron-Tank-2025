@@ -35,7 +35,8 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
-    CameraServer.startAutomaticCapture();
+    CameraServer.startAutomaticCapture("Intake Camera",0);
+    CameraServer.startAutomaticCapture("Climber Camera", 1);
 
   }
 
@@ -54,13 +55,13 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    NetworkTable table = inst.getTable("AdvantageScope");
-    NetworkTable cameraTable = table.getSubTable("myCamera");
-    Pose3d cameraPose = new Pose3d(
-      new Translation3d(0.2, 0.0, 0.5),
-      new Rotation3d(0, Math.toRadians(-20),0)
-    );
+    // NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    // NetworkTable table = inst.getTable("AdvantageScope");
+    // NetworkTable cameraTable = table.getSubTable("myCamera");
+    // Pose3d cameraPose = new Pose3d(
+    //   new Translation3d(0.2, 0.0, 0.5),
+    //   new Rotation3d(0, Math.toRadians(-20),0)
+    // );
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
