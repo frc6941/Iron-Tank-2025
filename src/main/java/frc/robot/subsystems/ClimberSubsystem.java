@@ -1,7 +1,4 @@
-// Copyright (c) 2024 FRC 6941 Inc. All Rights Reserved.
-//
-// Tämä on niin huipputeknologiaa, että se puhuu suomea.
-// This is so high-tech that it speaks Finnish.
+
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;

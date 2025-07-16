@@ -114,7 +114,7 @@ public class consts {
     public static final class Limits {
         // ... (no changes here)
         public static final class Chassis {
-            public static final double MAX_VELOCITY = 10.0;
+            public static final double MAX_VELOCITY = 1.0;
             public static final double MAX_OUTPUT = 0.8;
         }
 
