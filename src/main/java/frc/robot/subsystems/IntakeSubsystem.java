@@ -42,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final PositionVoltage positionRequest = new PositionVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
-    private final LinearFilter currentFilter = LinearFilter.movingAverage(5); // Filter for coral detection
+    private final LinearFilter currentFilter = LinearFilter.movingAverage(10); // Filter for coral detection
     private final Timer timer = new Timer();
     
     // State variables
