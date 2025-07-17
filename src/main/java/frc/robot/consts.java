@@ -119,8 +119,8 @@ public class consts {
 
             public static final TunableNumber ROLLER_POWER = new TunableNumber("intake_roller_power", 1.0);
             public static final TunableNumber HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
-            public static final TunableNumber ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
-            public static final TunableNumber POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
+            public static final TunableNumber ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.49);
+            public static final TunableNumber POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.08);
             public static final TunableNumber HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
             public static final TunableNumber PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
             public static final TunableNumber EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
@@ -128,13 +128,15 @@ public class consts {
             public static final TunableNumber ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
 
             // Minimum velocity to consider if motorRoller has stopped from a coral
-            public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 1.0);
+            public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 0.5);
             // Maximum stator current to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_CURRENT_THRESHOLD = new TunableNumber("has_coral_current_threshold", 40.0);
             // Eject time in seconds
             public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 2.0);
             // Hold voltage
             public static final TunableNumber HOLD_VOLTAGE = new TunableNumber("intake_hold_voltage", 3.0);
+            // Linear filter window size
+            public static final TunableNumber LF_WINDOW_SIZE = new TunableNumber("lf_window_size", 10);
         }
     }
 

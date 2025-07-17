@@ -42,11 +42,10 @@ public class IntakeSubsystem extends SubsystemBase {
     private final PositionVoltage positionRequest = new PositionVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
-    private final LinearFilter currentFilter = LinearFilter.movingAverage(10); // Filter for coral detection
+    private final LinearFilter currentFilter = LinearFilter.movingAverage((int) consts.Superstructures.Intake.LF_WINDOW_SIZE.get()); // Filter for coral detection
     private final Timer timer = new Timer();
     
     // State variables
-    private CurrentState lastState = CurrentState.IDLE;
     private double zeroPosition = 0.0; // Current zero position (set by Y button)
     public static enum CurrentState {INTAKING, EJECTING, HOLDING, ELEVATING, ZEROING, IDLE}
     public static enum WantedState {INTAKE, EJECT, HOLD, ELEVATE, ZERO}
@@ -108,11 +107,6 @@ public class IntakeSubsystem extends SubsystemBase {
      * @return true if coral is detected, false otherwise
      */
     public boolean detectCoral() {
-        // If the roller does not have a voltage applied, it is impossible to hold a coral so we short circuit this check
-        if (motorRoller.getMotorVoltage().getValueAsDouble() < 1) {
-            return false;
-        }
-
         // Check if the roller is moving and if the filter detects a high current
         double rollerVelocity = motorRoller.getVelocity().getValueAsDouble();
         double rollerCurrent = currentFilter.calculate(motorRoller.getStatorCurrent().getValueAsDouble());
@@ -120,9 +114,9 @@ public class IntakeSubsystem extends SubsystemBase {
         if (rollerVelocity < consts.Superstructures.Intake.HAS_CORAL_VELOCITY_THRESHOLD.get() && 
             rollerCurrent > consts.Superstructures.Intake.HAS_CORAL_CURRENT_THRESHOLD.get()) {
             return true;
+        } else {
+            return false;
         }
-
-        return false;
     }
 
     /**
@@ -368,16 +362,16 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // Coral detection logging
         Logger.recordOutput("Intake/Coral/HasCoral", hasCoral);
+
+        // States
+        Logger.recordOutput("Intake/State/Position", intakePosition);
+        Logger.recordOutput("Intake/State/WantedState", wantedState);
+        Logger.recordOutput("Intake/State/CurrentState", currentState);
     }
 
     @Override
     public void periodic() {
-        // Coral detection logic
-        boolean prevHasCoral = hasCoral;
         hasCoral = detectCoral();
-        if (!prevHasCoral && hasCoral) {
-            edu.wpi.first.wpilibj.DriverStation.reportWarning("Coral detected by intake!", false);
-        }
 
         // Process the current state of the intake subsystem
         checkPosition();
@@ -387,10 +381,5 @@ public class IntakeSubsystem extends SubsystemBase {
         updatePID();
 
         log();
-
-        if (currentState != lastState){
-            System.out.println(currentState);
-            lastState = currentState;
-        }
     }
 }
