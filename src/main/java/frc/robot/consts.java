@@ -142,4 +142,7 @@ public class consts {
     public static final TunableNumber INTAKE_PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
     public static final TunableNumber INTAKE_ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
     public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0);
+    public static final TunableNumber CLIMBER_ZERO_POSITION = new TunableNumber("climber_zero_position", -93.991211);
+    public static final TunableNumber CLIMBER_START_POSITION = new TunableNumber("climber_start_position", -44.416992);
+    public static final TunableNumber CLIMBER_STOP_POSITION = new TunableNumber("climber_stop_position", -176.067383);
 }

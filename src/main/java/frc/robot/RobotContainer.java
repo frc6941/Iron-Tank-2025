@@ -84,13 +84,17 @@ public class RobotContainer {
     }));
 
     // Climber Controls
-    mainController.x().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== X BUTTON PRESSED - Start climbing ===");
-      climberSubsystem.setClimberVoltage();
-    }));
     mainController.a().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== A BUTTON PRESSED - Stop climbing ===");
-      climberSubsystem.stopClimb();
+      System.out.println("=== A BUTTON PRESSED - Move climber to zero position ===");
+      climberSubsystem.goToZeroPosition();
+    }));
+    mainController.x().onTrue(climberSubsystem.runOnce(() -> {
+      System.out.println("=== X BUTTON PRESSED - Move climber to start position ===");
+      climberSubsystem.goToStartPosition();
+    }));
+    mainController.y().onTrue(climberSubsystem.runOnce(() -> {
+      System.out.println("=== Y BUTTON PRESSED - Move climber to stop position ===");
+      climberSubsystem.goToStopPosition();
     }));
   }
 
