@@ -240,7 +240,7 @@ public class IntakeSubsystem extends SubsystemBase {
         if (scheduledTasks.isEmpty()) {
             return;
         } else {
-        wantedState = scheduledTasks.remove(0); // Get the first scheduled task
+        wantedState = scheduledTasks.poll(); // Get the first scheduled task
         }
         
         switch (wantedState) {

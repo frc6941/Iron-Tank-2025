@@ -133,6 +133,8 @@ public class consts {
             public static final TunableNumber HAS_CORAL_CURRENT_THRESHOLD = new TunableNumber("has_coral_current_threshold", 40.0);
             // Eject time in seconds
             public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 2.0);
+            // Hold voltage
+            public static final TunableNumber HOLD_VOLTAGE = new TunableNumber("intake_hold_voltage", 3.0);
         }
     }
 
