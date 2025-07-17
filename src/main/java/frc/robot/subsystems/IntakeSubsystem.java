@@ -33,7 +33,6 @@ import frc.robot.consts.Limits.Intake;
  * ELEVATE:     __
  */
 public class IntakeSubsystem extends SubsystemBase {
-
     // Motors
     private final TalonFX motorPivot = new TalonFX(consts.CANID.MOTOR_PIVOT);
     private final TalonFX motorRoller = new TalonFX(consts.CANID.MOTOR_ROLLER);
@@ -51,11 +50,10 @@ public class IntakeSubsystem extends SubsystemBase {
     private double zeroPosition = 0.0; // Current zero position (set by Y button)
     public static enum CurrentState {INTAKING, EJECTING, HOLDING, ELEVATING, ZEROING, IDLE}
     public static enum WantedState {INTAKE, EJECT, HOLD, ELEVATE, ZERO}
-    public static enum IntakePosition {ZERO, EJECT, ELEVATE}
+    public static enum IntakePosition {ZERO, EJECT, ELEVATE, BUSY}
     private CurrentState currentState = CurrentState.IDLE; // Current state of the intake subsystem
     private WantedState wantedState = WantedState.ZERO; // Desired state of the intake subsystem
     private IntakePosition intakePosition = IntakePosition.ZERO; // Current position of the intake subsystem
-    private Queue<WantedState> scheduledTasks = new ArrayDeque<WantedState>(); // Scheduled tasks for the intake subsystem
     private boolean hasCoral = false;
 
     public IntakeSubsystem() {
@@ -102,12 +100,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
         motorPivot.getConfigurator().apply(pivotConfig);
         motorRoller.getConfigurator().apply(rollerConfig);
-        
-        // System.out.println("IntakeSubsystem: Pivot motor config result: " + pivotResult);
-        // System.out.println("IntakeSubsystem: Roller motor config result: " + rollerResult);
-        // System.out.println("IntakeSubsystem: Pivot motor CAN ID: " + consts.CANID.MOTOR_PIVOT);
-        // System.out.println("IntakeSubsystem: Roller motor CAN ID: " + consts.CANID.MOTOR_ROLLER);
-        // System.out.println("IntakeSubsystem: Roller PID - kP: " + consts.PID.rollerPID.kP.get() + ", kI: " + consts.PID.rollerPID.kI.get() + ", kD: " + consts.PID.rollerPID.kD.get());
     }
 
     /**
@@ -220,27 +212,31 @@ public class IntakeSubsystem extends SubsystemBase {
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
-    public boolean isShootFinished() {
-        if (currentState == CurrentState.IDLE) { 
-            return true;
+    public void checkPosition() {
+        if (isAtZero()) {
+            intakePosition = IntakePosition.ZERO;
+        } else if (isAtEjectingPosition()) {
+            intakePosition = IntakePosition.EJECT;
+        } else if (isAtElevated()) {
+            intakePosition = IntakePosition.ELEVATE;
         } else {
-            return false;
+            intakePosition = IntakePosition.BUSY;
         }
+    }
+
+    public boolean isShootFinished() {
+        // A "shoot" is finished if the intake is no longer in the EJECTING state
+        return currentState != CurrentState.EJECTING;
     }
 
     public void setWantedState(WantedState state) {
-        scheduledTasks.add(state); // Add the state to the scheduled tasks
+        wantedState = state;
     }
 
     public void processWantedState() {
-        // If the current state is not IDLE or HOLDING, we short circuit.
+        // If the current state is not IDLE or HOLDING, we are busy so we short circuit.
         if (currentState != CurrentState.IDLE && currentState != CurrentState.HOLDING) {
             return;
-        }
-        if (scheduledTasks.isEmpty()) {
-            return;
-        } else {
-        wantedState = scheduledTasks.poll(); // Get the first scheduled task
         }
         
         switch (wantedState) {
@@ -278,7 +274,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 // If we have a coral detected, stop the intake
                 if (hasCoral) {
                     stopIntake();
-                    currentState = CurrentState.HOLDING; // Go HOLDING state when stopping intake
+                    currentState = CurrentState.IDLE; // Go IDLE state when stopping intake
                     wantedState = WantedState.HOLD; // After stopping intake, we want to goto HOLD
                 } else {
                     // Continue intake until a coral is detected
@@ -287,7 +283,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 break;
             case EJECTING:
                 // Go to eject position
-                if (!isAtEjectingPosition()) {
+                if (intakePosition != IntakePosition.EJECT) {
                     hold();
                     goToEjectPosition();
                     break;
@@ -302,7 +298,7 @@ public class IntakeSubsystem extends SubsystemBase {
                     stopEject();
                     timer.stop();
                     hasCoral = false; // Reset coral detection after ejecting
-                    currentState = CurrentState.ZEROING; // No scheduled task, so we go to default state
+                    currentState = CurrentState.IDLE; // No scheduled task, so we go to default state
                     wantedState = WantedState.ZERO; // After ejecting, we want to go to zero position
                 } else {
                     // Continue ejecting until the timer expires
@@ -313,26 +309,22 @@ public class IntakeSubsystem extends SubsystemBase {
                 // Holds coral regardless of position
                 hold();
                 // If we reach holding point, go HOLDING
-                if (isAtZero()) {
-                    intakePosition = IntakePosition.ZERO; // Update intake position to holding
-                } else {
+                if (intakePosition != IntakePosition.ZERO) {
                     goToZero();
                 }
                 break;
             case ELEVATING:
                 // If the pivot is at the elevated position, turn to IDLE
-                if (isAtElevated()) {
+                if (intakePosition == IntakePosition.ELEVATE) {
                     currentState = CurrentState.IDLE;
-                    intakePosition = IntakePosition.ELEVATE; // Update intake position to elevated
                 } else {
                     elevate();
                 }
                 break;
             case ZEROING:
                 // If the pivot is at the zero position, turn to IDLE
-                if (isAtZero()) {
+                if (intakePosition == IntakePosition.ZERO) {
                     currentState = CurrentState.IDLE;
-                    intakePosition = IntakePosition.ZERO; // Update intake position to zero
                 } else {
                     goToZero();
                 }
@@ -361,8 +353,7 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Pivot/Current", motorPivot.getStatorCurrent().getValue());
         Logger.recordOutput("Intake/Pivot/Voltage", motorPivot.getSupplyVoltage().getValue());
         Logger.recordOutput("Intake/Pivot/ZeroPosition", zeroPosition);
-        Logger.recordOutput("Intake/Pivot/IsAtZero", isAtZero());
-        Logger.recordOutput("Intake/Pivot/IsAtElevated", isAtElevated());
+        Logger.recordOutput("Intake/Pivot/position", intakePosition);
         Logger.recordOutput("Intake/Pivot/CANcoderPosition", encoderPivot.getAbsolutePosition().getValue());
 
         // Roller motor logging
@@ -389,6 +380,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
 
         // Process the current state of the intake subsystem
+        checkPosition();
         processWantedState();
         processState();
 
