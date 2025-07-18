@@ -12,10 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.path.PathPlannerPath;
 
@@ -33,24 +30,23 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.consts;
-import frc.robot.consts.Drive.CheesyDrive;
+import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase {
 
     // Motors
-    private static final TalonFX motorLeft = new TalonFX(consts.CANID.MOTOR_LEFT);
-    private static final TalonFX motorLeftFollower = new TalonFX(consts.CANID.MOTOR_LEFT_FOLLEWER);
-    private static final TalonFX motorRight = new TalonFX(consts.CANID.MOTOR_RIGHT);
-    private static final TalonFX motorRightFollower = new TalonFX(consts.CANID.MOTOR_RIGHT_FOLLOWER);
+    private static final TalonFX motorLeft = new TalonFX(Constants.CANID.MOTOR_LEFT);
+    private static final TalonFX motorLeftFollower = new TalonFX(Constants.CANID.MOTOR_LEFT_FOLLEWER);
+    private static final TalonFX motorRight = new TalonFX(Constants.CANID.MOTOR_RIGHT);
+    private static final TalonFX motorRightFollower = new TalonFX(Constants.CANID.MOTOR_RIGHT_FOLLOWER);
 
     // Gyro
-    private static final WPI_PigeonIMU gyro = new WPI_PigeonIMU(consts.CANID.GYRO);
+    private static final WPI_PigeonIMU gyro = new WPI_PigeonIMU(Constants.CANID.GYRO);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
-    private final PIDController positionPID = new PIDController(consts.PID.positionPID.kP.get(), consts.PID.positionPID.kI.get(), consts.PID.positionPID.kD.get());
+    private final PIDController positionPID = new PIDController(Constants.PID.positionPID.kP.get(), Constants.PID.positionPID.kI.get(), Constants.PID.positionPID.kD.get());
 
     // Motor Controllers for DifferentialDrive
     private static final MotorController moterLeftController = new TalonFXMotorController(motorLeft);
@@ -155,13 +151,13 @@ public class DriveSubsystem extends SubsystemBase {
     public void configureMotors() {
         // Initialize the drive subsystem here
         Slot0Configs slot0Configs = generateSlot0Configs(
-            consts.PID.driveMotorPID.kP.get(),
-            consts.PID.driveMotorPID.kI.get(),
-            consts.PID.driveMotorPID.kD.get(),
-            consts.PID.driveMotorPID.kS.get(),
-            consts.PID.driveMotorPID.kV.get(),
-            consts.PID.driveMotorPID.kA.get(),
-            consts.PID.driveMotorPID.kG.get()
+            Constants.PID.driveMotorPID.kP.get(),
+            Constants.PID.driveMotorPID.kI.get(),
+            Constants.PID.driveMotorPID.kD.get(),
+            Constants.PID.driveMotorPID.kS.get(),
+            Constants.PID.driveMotorPID.kV.get(),
+            Constants.PID.driveMotorPID.kA.get(),
+            Constants.PID.driveMotorPID.kG.get()
         );
         TalonFXConfiguration leftTalonFXConfig = generateTalonFXConfig(true, NeutralModeValue.Brake, slot0Configs);
         TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
@@ -183,9 +179,9 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXConfig.MotorOutput.NeutralMode = defaultNeutralMode;
         talonFXConfig.Slot0 = slot0;
         // Apply current limits from constants
-        talonFXConfig.CurrentLimits.SupplyCurrentLimit = consts.Limits.Chassis.DRIVE_SUPPLY_CURRENT_LIMIT;
+        talonFXConfig.CurrentLimits.SupplyCurrentLimit = Constants.Limits.Chassis.DRIVE_SUPPLY_CURRENT_LIMIT;
         talonFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        talonFXConfig.CurrentLimits.StatorCurrentLimit = consts.Limits.Chassis.DRIVE_STATOR_CURRENT_LIMIT;
+        talonFXConfig.CurrentLimits.StatorCurrentLimit = Constants.Limits.Chassis.DRIVE_STATOR_CURRENT_LIMIT;
         talonFXConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         return talonFXConfig;
     }
@@ -207,8 +203,8 @@ public class DriveSubsystem extends SubsystemBase {
     // *** NEW: Cheesy Drive implementation with negative inertia and quick-turn ***
     public void cheesyDrive(double forward, double rotation, boolean isQuickTurn) {
         // Apply deadband from constants
-        double throttle = Math.abs(forward) < consts.Drive.DEADBAND ? 0.0 : forward;
-        double wheel = Math.abs(rotation) < consts.Drive.DEADBAND ? 0.0 : rotation;
+        double throttle = Math.abs(forward) < Constants.Drive.DEADBAND ? 0.0 : forward;
+        double wheel = Math.abs(rotation) < Constants.Drive.DEADBAND ? 0.0 : rotation;
 
         // --- Negative Inertia Logic ---
         double negInertia = wheel - mOldWheel;
@@ -216,12 +212,12 @@ public class DriveSubsystem extends SubsystemBase {
 
         double negInertiaScalar;
         if (wheel * negInertia > 0) {
-            negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTIA_SCALAR;
+            negInertiaScalar = Constants.Drive.CheesyDrive.NEG_INERTIA_SCALAR;
         } else {
-            if (Math.abs(wheel) > consts.Drive.CheesyDrive.NEG_INERTIA_THRESHOLD) {
-                negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTIA_TURN_SCALAR;
+            if (Math.abs(wheel) > Constants.Drive.CheesyDrive.NEG_INERTIA_THRESHOLD) {
+                negInertiaScalar = Constants.Drive.CheesyDrive.NEG_INERTIA_TURN_SCALAR;
             } else {
-                negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTia_CLOSE_SCALAR;
+                negInertiaScalar = Constants.Drive.CheesyDrive.NEG_INERTia_CLOSE_SCALAR;
             }
         }
         
@@ -280,8 +276,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void tankDrive(double leftSpeed, double rightSpeed) {
         // Apply speed limiting
-        leftSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, leftSpeed));
-        rightSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, rightSpeed));
+        leftSpeed = Math.max(-Constants.Limits.Chassis.MAX_OUTPUT, Math.min(Constants.Limits.Chassis.MAX_OUTPUT, leftSpeed));
+        rightSpeed = Math.max(-Constants.Limits.Chassis.MAX_OUTPUT, Math.min(Constants.Limits.Chassis.MAX_OUTPUT, rightSpeed));
         
         // Use DifferentialDrive, ensuring inputs are not squared as calculations are already done
         differentialDrive.tankDrive(leftSpeed, rightSpeed, false);
@@ -289,10 +285,10 @@ public class DriveSubsystem extends SubsystemBase {
     
 
     public static double getDistance(TalonFX motor) {
-        return motor.getPosition().getValueAsDouble()*consts.Superstructures.Chassis.METERS_PER_ROTATION;
+        return motor.getPosition().getValueAsDouble()* Constants.Superstructures.Chassis.METERS_PER_ROTATION;
     }
 
-    DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(consts.Superstructures.Chassis.TRACK_WIDTH);
+    DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.Superstructures.Chassis.TRACK_WIDTH);
 
     DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
         gyro.getRotation2d(),
@@ -326,12 +322,12 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setLeftMotorVelocity(double velocity) {
-        double targetRPS = velocity * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
+        double targetRPS = velocity * Constants.Superstructures.Chassis.ROTATIONS_PER_METER;
         setLeftMotorRPM(targetRPS);
     }
 
     public void setRightMotorVelocity(double velocity) {
-        double targetRPS = velocity * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
+        double targetRPS = velocity * Constants.Superstructures.Chassis.ROTATIONS_PER_METER;
         setRightMotorRPM(targetRPS);
     }
 
@@ -361,8 +357,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void turnInPlace(double angle) {
         // Calculate the distance each wheel needs to travel for the desired rotation
-        double distance = (angle / 360.0) * Math.PI * consts.Superstructures.Chassis.TRACK_WIDTH; // in meters
-        double rotations = distance * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
+        double distance = (angle / 360.0) * Math.PI * Constants.Superstructures.Chassis.TRACK_WIDTH; // in meters
+        double rotations = distance * Constants.Superstructures.Chassis.ROTATIONS_PER_METER;
         
         // Store starting positions
         double leftStartPosition = motorLeft.getPosition().getValueAsDouble();
@@ -381,13 +377,13 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void driveLeftDistance(double distance) {
-        double deltaRotations = distance * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
+        double deltaRotations = distance * Constants.Superstructures.Chassis.ROTATIONS_PER_METER;
         double targetPosition = motorLeft.getPosition().getValueAsDouble() + deltaRotations;
         setLeftMotorPosition(targetPosition);
     }
 
     public void driveRightDistance(double distance) {
-        double deltaRotations = distance * consts.Superstructures.Chassis.ROTATIONS_PER_METER;
+        double deltaRotations = distance * Constants.Superstructures.Chassis.ROTATIONS_PER_METER;
         double targetPosition = motorRight.getPosition().getValueAsDouble() + deltaRotations;
         setRightMotorPosition(targetPosition);
     }
@@ -425,21 +421,21 @@ public class DriveSubsystem extends SubsystemBase {
 
     private void updatePID() {
         // Check if any PID values have changed
-        boolean pidChanged = consts.PID.driveMotorPID.kP.hasChanged() ||
-                           consts.PID.driveMotorPID.kI.hasChanged() ||
-                           consts.PID.driveMotorPID.kD.hasChanged() ||
-                           consts.PID.driveMotorPID.kS.hasChanged() ||
-                           consts.PID.driveMotorPID.kV.hasChanged() ||
-                           consts.PID.driveMotorPID.kA.hasChanged() ||
-                           consts.PID.driveMotorPID.kG.hasChanged();
+        boolean pidChanged = Constants.PID.driveMotorPID.kP.hasChanged() ||
+                           Constants.PID.driveMotorPID.kI.hasChanged() ||
+                           Constants.PID.driveMotorPID.kD.hasChanged() ||
+                           Constants.PID.driveMotorPID.kS.hasChanged() ||
+                           Constants.PID.driveMotorPID.kV.hasChanged() ||
+                           Constants.PID.driveMotorPID.kA.hasChanged() ||
+                           Constants.PID.driveMotorPID.kG.hasChanged();
 
         // If any values changed, reconfigure the motors
         if (pidChanged) {
             Logger.recordOutput("Drive/PID/Reconfiguring", true);
             configureMotors();
-            Logger.recordOutput("Drive/PID/kP", consts.PID.driveMotorPID.kP.get());
-            Logger.recordOutput("Drive/PID/kI", consts.PID.driveMotorPID.kI.get());
-            Logger.recordOutput("Drive/PID/kD", consts.PID.driveMotorPID.kD.get());
+            Logger.recordOutput("Drive/PID/kP", Constants.PID.driveMotorPID.kP.get());
+            Logger.recordOutput("Drive/PID/kI", Constants.PID.driveMotorPID.kI.get());
+            Logger.recordOutput("Drive/PID/kD", Constants.PID.driveMotorPID.kD.get());
         } else {
             Logger.recordOutput("Drive/PID/Reconfiguring", false);
         }
@@ -503,8 +499,8 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Wheels/Right/Current", rightWheelCurrent);
         
         // Wheel velocity in meters per second (converted from rotations per second)
-        double leftWheelVelocityMPS = leftWheelVelocity * consts.Superstructures.Chassis.METERS_PER_ROTATION;
-        double rightWheelVelocityMPS = rightWheelVelocity * consts.Superstructures.Chassis.METERS_PER_ROTATION;
+        double leftWheelVelocityMPS = leftWheelVelocity * Constants.Superstructures.Chassis.METERS_PER_ROTATION;
+        double rightWheelVelocityMPS = rightWheelVelocity * Constants.Superstructures.Chassis.METERS_PER_ROTATION;
         Logger.recordOutput("Drive/Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
         Logger.recordOutput("Drive/Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
         

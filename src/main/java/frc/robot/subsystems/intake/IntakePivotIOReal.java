@@ -13,12 +13,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
-import frc.robot.consts;
-import frc.robot.consts.Limits.Intake;
-import frc.robot.consts.PID.pivotPID;
+import frc.robot.Constants;
+import frc.robot.Constants.PID.pivotPID;
 
 public class IntakePivotIOReal implements IntakePivotIO {
-    private final TalonFX motor = new TalonFX(consts.CANID.MOTOR_PIVOT);
+    private final TalonFX motor = new TalonFX(Constants.CANID.MOTOR_PIVOT);
 
     private final StatusSignal<AngularVelocity> velocityRotPerSec = motor.getVelocity();
     private final StatusSignal<Voltage> appliedVolts = motor.getSupplyVoltage();
@@ -28,7 +27,7 @@ public class IntakePivotIOReal implements IntakePivotIO {
     private final StatusSignal<Temperature> tempCelsius = motor.getDeviceTemp();
     private final StatusSignal<Angle> currentPositionRot = motor.getPosition();
 
-    private final CANcoder canCoder = new CANcoder(consts.CANID.ENCODER_PIVOT);
+    private final CANcoder canCoder = new CANcoder(Constants.CANID.ENCODER_PIVOT);
 
 
     private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(false);
@@ -49,13 +48,13 @@ public class IntakePivotIOReal implements IntakePivotIO {
 
         // Initialize CANcoder
         CANcoderConfiguration CANconfig = new CANcoderConfiguration();
-        CANconfig.MagnetSensor.MagnetOffset = consts.Sensors.Encoder.INTAKE_CANCODER_MAGET_OFFSET;
+        CANconfig.MagnetSensor.MagnetOffset = Constants.Sensors.Encoder.INTAKE_CANCODER_MAGET_OFFSET;
         CANconfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
         canCoder.getConfigurator().apply(CANconfig);
         // Try the fused CANcoder option, if it doesn't work, use the remote
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        config.Feedback.FeedbackRemoteSensorID = consts.CANID.ENCODER_PIVOT;
-        config.Feedback.RotorToSensorRatio = consts.Sensors.Encoder.ROTOR_TO_SENSOR_RATIO;
+        config.Feedback.FeedbackRemoteSensorID = Constants.CANID.ENCODER_PIVOT;
+        config.Feedback.RotorToSensorRatio = Constants.Sensors.Encoder.ROTOR_TO_SENSOR_RATIO;
 
         config.withSlot0(new Slot0Configs()
                 .withKP(pivotPID.kP.get())
@@ -63,9 +62,9 @@ public class IntakePivotIOReal implements IntakePivotIO {
                 .withKD(pivotPID.kD.get()));
 
         motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicCruiseVelocity = consts.Superstructures.Intake.INTAKE_PIVOT_CRUISE_VELOCITY.get();
-        motionMagicConfigs.MotionMagicAcceleration = consts.Superstructures.Intake.INTAKE_PIVOT_ACCELERATION.get();
-        motionMagicConfigs.MotionMagicJerk = consts.Superstructures.Intake.INTAKE_PIVOT_JERK.get();
+        motionMagicConfigs.MotionMagicCruiseVelocity = Constants.Superstructures.Intake.INTAKE_PIVOT_CRUISE_VELOCITY.get();
+        motionMagicConfigs.MotionMagicAcceleration = Constants.Superstructures.Intake.INTAKE_PIVOT_ACCELERATION.get();
+        motionMagicConfigs.MotionMagicJerk = Constants.Superstructures.Intake.INTAKE_PIVOT_JERK.get();
         config.withMotionMagic(motionMagicConfigs);
 
         motor.getConfigurator().apply(config);
@@ -106,7 +105,7 @@ public class IntakePivotIOReal implements IntakePivotIO {
         inputs.targetAngleDeg = targetAngleDeg;
         inputs.motorVolts = motorVolts.getValueAsDouble();
 
-        if (consts.TUNING) {
+        if (Constants.TUNING) {
             inputs.intakePivotKP = pivotPID.kP.get();
             inputs.intakePivotKI = pivotPID.kI.get();
             inputs.intakePivotKD = pivotPID.kD.get();
@@ -115,9 +114,9 @@ public class IntakePivotIOReal implements IntakePivotIO {
                     .withKP(inputs.intakePivotKP)
                     .withKI(inputs.intakePivotKI)
                     .withKD(inputs.intakePivotKD));
-            motionMagicConfigs.MotionMagicCruiseVelocity = consts.Superstructures.Intake.INTAKE_PIVOT_CRUISE_VELOCITY.get();
-            motionMagicConfigs.MotionMagicAcceleration = consts.Superstructures.Intake.INTAKE_PIVOT_ACCELERATION.get();
-            motionMagicConfigs.MotionMagicJerk = consts.Superstructures.Intake.INTAKE_PIVOT_JERK.get();
+            motionMagicConfigs.MotionMagicCruiseVelocity = Constants.Superstructures.Intake.INTAKE_PIVOT_CRUISE_VELOCITY.get();
+            motionMagicConfigs.MotionMagicAcceleration = Constants.Superstructures.Intake.INTAKE_PIVOT_ACCELERATION.get();
+            motionMagicConfigs.MotionMagicJerk = Constants.Superstructures.Intake.INTAKE_PIVOT_JERK.get();
             motor.getConfigurator().apply(motionMagicConfigs);
         }
     }

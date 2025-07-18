@@ -11,11 +11,11 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.consts;
+import frc.robot.Constants;
 import edu.wpi.first.wpilibj.Timer;
 
 public class ClimberSubsystem extends SubsystemBase {
-    private final TalonFX climberMotor = new TalonFX(consts.CANID.MOTOR_CLIMBER);
+    private final TalonFX climberMotor = new TalonFX(Constants.CANID.MOTOR_CLIMBER);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
     private final Timer climbTimer = new Timer();
@@ -35,7 +35,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /** Set climber voltage (tunable) */
     public void setClimberVoltage() {
-        double voltage = consts.CLIMBER_VOLTAGE.get();
+        double voltage = Constants.CLIMBER_VOLTAGE.get();
         System.out.println("ClimberSubsystem: setClimberVoltage() called, voltage: " + voltage);
         climberMotor.setControl(voltageRequest.withOutput(voltage));
         Logger.recordOutput("Climber/SetVoltage", voltage);
@@ -48,10 +48,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /** Move climber to start climb position */
     public void goToStartClimb() {
-        double pos = frc.robot.consts.CLIMBER_START_POSITION.get();
+        double pos = Constants.CLIMBER_START_POSITION.get();
         System.out.println("ClimberSubsystem: goToStartClimb() called, position: " + pos);
         // For example, use position control if available, else just set voltage for now
-        climberMotor.setControl(voltageRequest.withOutput(consts.CLIMBER_VOLTAGE.get()));
+        climberMotor.setControl(voltageRequest.withOutput(Constants.CLIMBER_VOLTAGE.get()));
         atStartPosition = true;
         climbing = false;
         Logger.recordOutput("Climber/GoToStartClimb", pos);
@@ -59,10 +59,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /** Move climber to zero position */
     public void goToZero() {
-        double pos = frc.robot.consts.CLIMBER_ZERO_POSITION.get();
+        double pos = Constants.CLIMBER_ZERO_POSITION.get();
         System.out.println("ClimberSubsystem: goToZero() called, position: " + pos);
         // For example, use position control if available, else just set voltage for now
-        climberMotor.setControl(voltageRequest.withOutput(-consts.CLIMBER_VOLTAGE.get()));
+        climberMotor.setControl(voltageRequest.withOutput(-Constants.CLIMBER_VOLTAGE.get()));
         atStartPosition = false;
         climbing = false;
         Logger.recordOutput("Climber/GoToZero", pos);
@@ -81,7 +81,7 @@ public class ClimberSubsystem extends SubsystemBase {
     public void handleTimedClimb() {
         if (climbing) {
             if (climbTimer.get() < 5.0) {
-                climberMotor.setControl(voltageRequest.withOutput(consts.CLIMBER_VOLTAGE.get()));
+                climberMotor.setControl(voltageRequest.withOutput(Constants.CLIMBER_VOLTAGE.get()));
             } else {
                 stopClimb();
                 climbing = false;
