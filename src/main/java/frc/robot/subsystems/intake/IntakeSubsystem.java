@@ -2,8 +2,7 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.consts;
 import frc.robot.SuperstructureVisualizer;
 import frc.robot.subsystems.roller.RollerIOInputsAutoLogged;
@@ -12,29 +11,26 @@ import org.littletonrobotics.junction.Logger;
 
 import static frc.robot.consts.Superstructures.Intake.*;
 
+import java.util.function.Supplier;
+
 public class IntakeSubsystem extends RollerSubsystem {
     public static final String NAME = "Intake/Roller";
-    private static double shootAngle = EJECT_POSITION.get();
-    private static double deployAngle = ELEVATED_POSITION.get();
-    private static double shootVoltage = ROLLER_VOLTAGE.get();
-    private static double homeAngle = HOME_POSITION.get();
+    private static double holdAngle = HOLD_ANGLE.get();
+    private static double deployAngle = DEPLOY_ANGLE.get();
+    private static double homeAngle = HOME_ANGLE.get();
+    private static double shootVoltage = SHOOT_VOLTAGE.get();
+    private static double holdVoltage = HOLD_VOLTAGE.get();
     private static double intakeVoltage = INTAKE_VOLTAGE.get();
-    private static double intakeHoldVoltage = INTAKE_HOLD_VOLTAGE.get();
-    private static double rollerAmpsHasCoral = HAS_CORAL_CURRENT_THRESHOLD.get();
-    private static double intakeTime = 1.0;
+    private static double rollerHasCoralAmps = HAS_CORAL_CURRENT_THRESHOLD.get();
+    private static double rollerHasCoralVel = HAS_CORAL_VELOCITY_THRESHOLD.get();
     private final IntakePivotIO intakePivotIO;
     private final IntakeRollerIO intakeRollerIO;
     private final IntakePivotIOInputsAutoLogged intakePivotIOInputs = new IntakePivotIOInputsAutoLogged();
     private final RollerIOInputsAutoLogged intakeRollerIOInputs = new RollerIOInputsAutoLogged();
     private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
-    public boolean hasHomed = false;
-    Timer timer = new Timer();
-    private boolean shouldOuttake = false;
     private WantedState wantedState = WantedState.HOME;
     private SystemState systemState = SystemState.HOMING;
     private double currentFilterValue = 0.0;
-    private boolean timerStarted = false;
-    private boolean lowerAngle = false;
 
     public IntakeSubsystem(
             IntakePivotIO intakePivotIO,
@@ -57,7 +53,6 @@ public class IntakeSubsystem extends RollerSubsystem {
         Logger.recordOutput("Intake/SystemState", systemState.toString());
         Logger.recordOutput("Intake/WantedState", wantedState.toString());
 
-
         SuperstructureVisualizer.getInstance().updateIntake(intakePivotIOInputs.currentAngleDeg);
 
         currentFilterValue = currentFilter.calculate(intakePivotIOInputs.statorCurrentAmps);
@@ -76,143 +71,62 @@ public class IntakeSubsystem extends RollerSubsystem {
                 intakeRollerIO.setVoltage(intakeVoltage);
                 intakePivotIO.setPivotAngle(deployAngle);
                 break;
-            case SHOOTING:
-                intakeRollerIO.setVoltage(shootVoltage);
-                intakePivotIO.setPivotAngle(shootAngle);
-                break;
-            case DEPLOY_SHOOTING:
-                intakeRollerIO.setVoltage(0);
-                intakePivotIO.setPivotAngle(shootAngle);
+            case OUTTAKING:
+                intakeRollerIO.setVoltage(-intakeVoltage);
+                intakePivotIO.setPivotAngle(deployAngle);
                 break;
             case HOMING:
                 intakeRollerIO.stop();
                 intakePivotIO.setPivotAngle(homeAngle);
                 break;
-            case DEPLOY_INTAKE_HOLDING:
-                intakeRollerIO.setVoltage(intakeVoltage);
-                intakePivotIO.setPivotAngle(deployAngle);
+            case HOLDING:
+                intakeRollerIO.setVoltage(holdVoltage);
+                intakePivotIO.setPivotAngle(holdAngle);
+                break;
+            case HOLD_SHOOTING:
+                intakeRollerIO.setVoltage(shootVoltage);
+                intakePivotIO.setPivotAngle(holdAngle);
                 break;
             case OFF:
                 break;
         }
 
         if (consts.TUNING) {
-            deployAngle = ELEVATED_POSITION.get();
-            shootVoltage = ROLLER_VOLTAGE.get();
-            homeAngle = HOME_POSITION.get();
+            deployAngle = DEPLOY_ANGLE.get();
+            shootVoltage = SHOOT_VOLTAGE.get();
+            homeAngle = HOME_ANGLE.get();
             intakeVoltage = INTAKE_VOLTAGE.get();
-            rollerAmpsHasCoral = HAS_CORAL_CURRENT_THRESHOLD.get();
-            intakeTime = 1.0;
-            shootAngle = EJECT_POSITION.get();
-            intakeHoldVoltage = INTAKE_HOLD_VOLTAGE.get();
+            rollerHasCoralAmps = HAS_CORAL_CURRENT_THRESHOLD.get();
+            rollerHasCoralVel = HAS_CORAL_VELOCITY_THRESHOLD.get();
+            holdAngle = HOLD_ANGLE.get();
+            holdVoltage = HOLD_VOLTAGE.get();
         }
     }
 
     private SystemState handleStateTransition() {
         return switch (wantedState) {
             case DEPLOY_WITHOUT_ROLL -> SystemState.DEPLOY_WITHOUT_ROLLING;
-            case DEPLOY_INTAKE -> {
-                if (lowerAngle) {
-                    yield SystemState.TREMBLE_INTAKING;
-                } else {
-                    yield SystemState.DEPLOY_INTAKING;
-                }
-            }
-            case DEPLOY_INTAKE_HOLD -> SystemState.DEPLOY_INTAKE_HOLDING;
-            case TREMBLE_INTAKE -> SystemState.TREMBLE_INTAKING;
+            case DEPLOY_INTAKE -> SystemState.DEPLOY_INTAKING;
             case OUTTAKE -> SystemState.OUTTAKING;
-            case HOLD_OUTTAKE -> SystemState.HOLD_OUTTAKING;
             case HOME -> SystemState.HOMING;
-            case SHOOT -> SystemState.SHOOTING;
-            case DEPLOY_SHOOT -> SystemState.DEPLOY_SHOOTING;
-            case GROUNDZERO -> SystemState.GROUNDZEROING;
+            case HOLD -> SystemState.HOLDING;
+            case HOLD_SHOOT -> SystemState.HOLD_SHOOTING;
             case OFF -> SystemState.OFF;
         };
     }
-/*
-    public void trembleIntake() {
-        intakeRollerIO.setVoltage(intakeVoltage);
-        intakePivotIO.setPivotAngle(deployAngle + 2);
+
+    public boolean hasCoral() {
+        // If the roller does not have a voltage applied, it is impossible to hold a coral so we short circuit this check
+        if (intakeRollerIOInputs.appliedVolts < intakeVoltage / 2) {
+            return false;
+        }
+
+        if (intakeRollerIOInputs.velocityRotPerSec < rollerHasCoralVel && intakeRollerIOInputs.statorCurrentAmps > rollerHasCoralAmps) {
+            return true;
+        }
+
+        return false;
     }
-
-    public void zeroIntakeGround() {
-        intakeRollerIO.stop();
-        if (!isNearAngle(101) && !hasHomed) {
-            intakePivotIO.setPivotAngle(100);
-            return;
-        }
-        hasHomed = true;
-        if (RobotBase.isReal()) {
-            if (currentFilterValue <= 18) {
-                intakePivotIO.setMotorVoltage(0.5);
-                setWantedState(WantedState.GROUNDZERO);
-            }
-            if (currentFilterValue > 18) {
-                intakePivotIO.setMotorVoltage(0);
-                intakePivotIO.resetAngle(120);
-                setWantedState(WantedState.HOME);
-                hasHomed = false;
-            }
-        } else {
-            intakePivotIO.setPivotAngle(0);
-            setWantedState(WantedState.HOME);
-            hasHomed = false;
-        }
-    }
-
-    private void rollerIntake() {
-        if (inputs.statorCurrentAmps > rollerAmpsHasCoral && !timerStarted) {
-            timer.start();
-            timerStarted = true;
-        }
-        if (inputs.statorCurrentAmps < rollerAmpsHasCoral && timerStarted && !shouldOuttake) {
-            timer.stop();
-            timer.reset();
-            timerStarted = false;
-        }
-        if (timerStarted && timer.hasElapsed(outtakeTime)) {
-            intakeRollerIO.setVoltage(outtakeVoltage);
-            shouldOuttake = true;
-            if (timer.hasElapsed(intakeTime)) {
-                intakeRollerIO.setVoltage(intakeVoltage);
-                timer.stop();
-                timer.reset();
-                shouldOuttake = false;
-                timerStarted = false;
-            }
-        } else {
-            intakeRollerIO.setVoltage(intakeVoltage);
-        }
-
-    }*/
-    
-    /*
-    private void rollerHoldIntake() {
-        if (inputs.statorCurrentAmps > rollerAmpsHasCoral && !timerStarted) {
-            timer.start();
-            timerStarted = true;
-        }
-        if (inputs.statorCurrentAmps < rollerAmpsHasCoral && timerStarted && !shouldOuttake) {
-            timer.stop();
-            timer.reset();
-            timerStarted = false;
-        }
-        if (timerStarted && timer.hasElapsed(outtakeTime)) {
-            intakeRollerIO.setVoltage(outtakeVoltage);
-            shouldOuttake = true;
-            if (timer.hasElapsed(intakeTime)) {
-                intakeRollerIO.setVoltage(intakeHoldVoltage);
-                timer.stop();
-                timer.reset();
-                shouldOuttake = false;
-                timerStarted = false;
-            }
-        } else {
-            intakeRollerIO.setVoltage(intakeHoldVoltage);
-        }
-
-    } */
-
 
     public boolean isNearAngle(double targetAngleDeg) {
         return MathUtil.isNear(targetAngleDeg, intakePivotIOInputs.currentAngleDeg, 1);
@@ -223,31 +137,31 @@ public class IntakeSubsystem extends RollerSubsystem {
         this.wantedState = wantedState;
     }
 
+    public Command setWantedState(Supplier<WantedState> wantedState) {
+        return run(() -> setWantedState(wantedState.get()));
+    }
+
+    public SystemState getSystemState() {
+        return systemState;
+    }
+
     public enum WantedState {
         DEPLOY_WITHOUT_ROLL,
         DEPLOY_INTAKE,
-        TREMBLE_INTAKE,
         OUTTAKE,
-        HOLD_OUTTAKE,
+        HOLD,
+        HOLD_SHOOT,
         HOME,
-        GROUNDZERO,
-        DEPLOY_SHOOT,
-        SHOOT,
-        DEPLOY_INTAKE_HOLD,
         OFF,
     }
 
     public enum SystemState {
         DEPLOY_WITHOUT_ROLLING,
         DEPLOY_INTAKING,
-        TREMBLE_INTAKING,
         OUTTAKING,
-        HOLD_OUTTAKING,
+        HOLDING,
+        HOLD_SHOOTING,
         HOMING,
-        GROUNDZEROING,
-        DEPLOY_SHOOTING,
-        SHOOTING,
-        DEPLOY_INTAKE_HOLDING,
         OFF,
     }
 }

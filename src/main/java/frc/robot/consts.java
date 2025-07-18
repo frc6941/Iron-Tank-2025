@@ -120,18 +120,12 @@ public class consts {
 
             public static final double L1 = 100; // Height in degrees for L1 state
 
-            public static final TunableNumber ROLLER_POWER = new TunableNumber("intake_roller_power", 1.0);
-            public static final TunableNumber HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
-            public static final TunableNumber ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
-            public static final TunableNumber POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
-            public static final TunableNumber HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
-            public static final TunableNumber PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
-            public static final TunableNumber EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
-            public static final TunableNumber PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
-            public static final TunableNumber ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
-            
-            public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("intake_voltage",6.0);
-            public static final TunableNumber INTAKE_HOLD_VOLTAGE = new TunableNumber("intake_hold_voltage",2.0);
+            public static final TunableNumber SHOOT_VOLTAGE = new TunableNumber("intake_shoot_voltage", 4.0);
+            public static final TunableNumber DEPLOY_ANGLE = new TunableNumber("intake_deploy_angle", 100);
+            public static final TunableNumber HOME_ANGLE = new TunableNumber("intake_home_angle", 0.0);
+            public static final TunableNumber HOLD_ANGLE = new TunableNumber("intake_hold_angle", 40);            
+            public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("intake_intake_voltage",6.0);
+            public static final TunableNumber HOLD_VOLTAGE = new TunableNumber("intake_hold_voltage",2.0);
 
             // Minimum velocity to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 1.0);
