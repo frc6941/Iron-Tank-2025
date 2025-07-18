@@ -50,12 +50,12 @@ public class consts {
             public static final TunableNumber kG = new TunableNumber("position_kG", 0.0);
         }
         public static final class pivotPID {
-            public static final TunableNumber kP = new TunableNumber("pivot_kP", 4);
+            public static final TunableNumber kP = new TunableNumber("pivot_kP", 5);
             public static final TunableNumber kI = new TunableNumber("pivot_kI", 0.2);
             public static final TunableNumber kD = new TunableNumber("pivot_kD", 0.1);
         }
         public static final class rollerPID {
-            public static final TunableNumber kP = new TunableNumber("roller_kP", 3);
+            public static final TunableNumber kP = new TunableNumber("roller_kP", 4);
             public static final TunableNumber kI = new TunableNumber("roller_kI", 0.0);
             public static final TunableNumber kD = new TunableNumber("roller_kD", 0.0);
         }
@@ -111,28 +111,17 @@ public class consts {
         }
 
         public static final class Intake {
-            public static final double PIVOT_MAX_ANGLE = 90.0; // Maximum angle in degrees
-            public static final double PIVOT_MIN_ANGLE = 0.0; // Minimum angle in degrees
-            public static final double HOLD_ANGLE_OFFSET = 0.5; // Hold position offset from zero in rotations
-
-            public static final double L1 = 100; // Height in degrees for L1 state
-
             public static final TunableNumber ROLLER_POWER = new TunableNumber("intake_roller_power", 1.0);
-            public static final TunableNumber HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
             public static final TunableNumber ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.49);
             public static final TunableNumber POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.08);
-            public static final TunableNumber HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
-            public static final TunableNumber PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
             public static final TunableNumber EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
-            public static final TunableNumber PIVOT_VOLTAGE = new TunableNumber("intake_pivot_voltage", 4.0);
-            public static final TunableNumber ROLLER_VOLTAGE = new TunableNumber("intake_roller_voltage", 4.0);
 
             // Minimum velocity to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_VELOCITY_THRESHOLD = new TunableNumber("has_coral_velocity_threshold", 0.5);
             // Maximum stator current to consider if motorRoller has stopped from a coral
             public static final TunableNumber HAS_CORAL_CURRENT_THRESHOLD = new TunableNumber("has_coral_current_threshold", 40.0);
             // Eject time in seconds
-            public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 2.0);
+            public static final TunableNumber EJECT_TIME = new TunableNumber("eject_time", 0.5);
             // Hold voltage
             public static final TunableNumber HOLD_VOLTAGE = new TunableNumber("intake_hold_voltage", 3.0);
             // Linear filter window size
@@ -165,9 +154,8 @@ public class consts {
         public static final class Intake {
             public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0;
             public static final double PIVOT_STATOR_CURRENT_LIMIT = 40.0;
-            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 40.0;
-            public static final double ROLLER_STATOR_CURRENT_LIMIT = 40.0;
-            public static final double ROLLER_INTAKE_SPEED = 30.0;
+            public static final double ROLLER_SUPPLY_CURRENT_LIMIT = 50.0;
+            public static final double ROLLER_STATOR_CURRENT_LIMIT = 50.0;
         }
     }
 

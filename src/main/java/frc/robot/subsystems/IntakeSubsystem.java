@@ -46,7 +46,6 @@ public class IntakeSubsystem extends SubsystemBase {
     private final Timer timer = new Timer();
     
     // State variables
-    private double zeroPosition = 0.0; // Current zero position (set by Y button)
     public static enum CurrentState {INTAKING, EJECTING, HOLDING, ELEVATING, ZEROING, IDLE}
     public static enum WantedState {INTAKE, EJECT, HOLD, ELEVATE, ZERO}
     public static enum IntakePosition {ZERO, EJECT, ELEVATE, BUSY}
@@ -123,7 +122,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Move pivot to zero position (called by B button)
      */
     public void goToZero() {
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition));
+        motorPivot.setControl(positionRequest.withPosition(0));
     }
 
     /**
@@ -159,7 +158,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void elevate() {
         // Move pivot counterclockwise to elevated position (negative value = counterclockwise)
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.Superstructures.Intake.ELEVATED_POSITION.get()));
+        motorPivot.setControl(positionRequest.withPosition(-consts.Superstructures.Intake.ELEVATED_POSITION.get()));
     }
 
     /**
@@ -173,7 +172,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Move pivot counterclockwise to eject position
      */
     public void goToEjectPosition() {
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.Superstructures.Intake.EJECT_POSITION.get()));
+        motorPivot.setControl(positionRequest.withPosition(-consts.Superstructures.Intake.EJECT_POSITION.get()));
     }
 
     /**
@@ -181,8 +180,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtZero() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double homePosition = zeroPosition + consts.Superstructures.Intake.HOME_POSITION.get();
-        double positionError = Math.abs(currentPosition - homePosition);
+        double positionError = Math.abs(currentPosition);
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
@@ -191,7 +189,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtEjectingPosition() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double holdingPosition = zeroPosition - consts.Superstructures.Intake.EJECT_POSITION.get();
+        double holdingPosition = -consts.Superstructures.Intake.EJECT_POSITION.get();
         double positionError = Math.abs(currentPosition - holdingPosition);
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
@@ -201,7 +199,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isAtElevated() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double elevatedPosition = zeroPosition - consts.Superstructures.Intake.ELEVATED_POSITION.get();
+        double elevatedPosition = -consts.Superstructures.Intake.ELEVATED_POSITION.get();
         double positionError = Math.abs(currentPosition - elevatedPosition);
         return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
@@ -346,7 +344,6 @@ public class IntakeSubsystem extends SubsystemBase {
         Logger.recordOutput("Intake/Pivot/Velocity", motorPivot.getVelocity().getValue());
         Logger.recordOutput("Intake/Pivot/Current", motorPivot.getStatorCurrent().getValue());
         Logger.recordOutput("Intake/Pivot/Voltage", motorPivot.getSupplyVoltage().getValue());
-        Logger.recordOutput("Intake/Pivot/ZeroPosition", zeroPosition);
         Logger.recordOutput("Intake/Pivot/position", intakePosition);
         Logger.recordOutput("Intake/Pivot/CANcoderPosition", encoderPivot.getAbsolutePosition().getValue());
 
@@ -358,7 +355,6 @@ public class IntakeSubsystem extends SubsystemBase {
         
         // Enhanced pivot position logging
         Logger.recordOutput("Intake/Pivot/CurrentPosition", motorPivot.getPosition().getValue());
-        Logger.recordOutput("Intake/Pivot/ZeroPosition", zeroPosition);
 
         // Coral detection logging
         Logger.recordOutput("Intake/Coral/HasCoral", hasCoral);
