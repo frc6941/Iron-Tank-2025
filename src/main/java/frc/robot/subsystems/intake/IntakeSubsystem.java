@@ -2,15 +2,14 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.consts;
+import frc.robot.Constants;
 import frc.robot.SuperstructureVisualizer;
 import frc.robot.subsystems.roller.RollerIOInputsAutoLogged;
 import frc.robot.subsystems.roller.RollerSubsystem;
 import org.littletonrobotics.junction.Logger;
 
-import static frc.robot.consts.Superstructures.Intake.*;
+import static frc.robot.Constants.Superstructures.Intake.*;
 
 public class IntakeSubsystem extends RollerSubsystem {
     public static final String NAME = "Intake/Roller";
@@ -96,7 +95,7 @@ public class IntakeSubsystem extends RollerSubsystem {
                 break;
         }
 
-        if (consts.TUNING) {
+        if (Constants.TUNING) {
             deployAngle = ELEVATED_POSITION.get();
             shootVoltage = ROLLER_VOLTAGE.get();
             homeAngle = HOME_POSITION.get();

@@ -20,8 +20,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.consts;
-import frc.robot.consts.Limits.Intake;
+import frc.robot.Constants;
 
 /*
  * Positions
@@ -32,9 +31,9 @@ import frc.robot.consts.Limits.Intake;
 public class Intaker extends SubsystemBase {
 
     // Motors
-    private final TalonFX motorPivot = new TalonFX(consts.CANID.MOTOR_PIVOT);
-    private final TalonFX motorRoller = new TalonFX(consts.CANID.MOTOR_ROLLER);
-    private final CANcoder encoderPivot = new CANcoder(consts.CANID.ENCODER_PIVOT);
+    private final TalonFX motorPivot = new TalonFX(Constants.CANID.MOTOR_PIVOT);
+    private final TalonFX motorRoller = new TalonFX(Constants.CANID.MOTOR_ROLLER);
+    private final CANcoder encoderPivot = new CANcoder(Constants.CANID.ENCODER_PIVOT);
 
     // Controls
     private final PositionVoltage positionRequest = new PositionVoltage(0);
@@ -57,7 +56,7 @@ public class Intaker extends SubsystemBase {
     public Intaker() {
         configureMotors();
         CANcoderConfiguration CANcoder = new CANcoderConfiguration();
-        CANcoder.MagnetSensor.MagnetOffset = consts.Sensors.Encoder.INTAKE_CANCODER_MAGET_OFFSET;
+        CANcoder.MagnetSensor.MagnetOffset = Constants.Sensors.Encoder.INTAKE_CANCODER_MAGET_OFFSET;
         CANcoder.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
         encoderPivot.getConfigurator().apply(CANcoder);
     }
@@ -65,35 +64,35 @@ public class Intaker extends SubsystemBase {
     public void configureMotors() {
         // Configure pivot motor
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
-        pivotSlot0Configs.kP = consts.PID.pivotPID.kP.get();
-        pivotSlot0Configs.kI = consts.PID.pivotPID.kI.get();
-        pivotSlot0Configs.kD = consts.PID.pivotPID.kD.get();
+        pivotSlot0Configs.kP = Constants.PID.pivotPID.kP.get();
+        pivotSlot0Configs.kI = Constants.PID.pivotPID.kI.get();
+        pivotSlot0Configs.kD = Constants.PID.pivotPID.kD.get();
 
         TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
         pivotConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        pivotConfig.Feedback.FeedbackRemoteSensorID = consts.CANID.ENCODER_PIVOT;
-        pivotConfig.Feedback.RotorToSensorRatio = consts.Sensors.Encoder.ROTOR_TO_SENSOR_RATIO;
+        pivotConfig.Feedback.FeedbackRemoteSensorID = Constants.CANID.ENCODER_PIVOT;
+        pivotConfig.Feedback.RotorToSensorRatio = Constants.Sensors.Encoder.ROTOR_TO_SENSOR_RATIO;
         pivotConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         pivotConfig.Slot0 = pivotSlot0Configs;
-        pivotConfig.CurrentLimits.SupplyCurrentLimit = consts.Limits.Intake.PIVOT_SUPPLY_CURRENT_LIMIT;
+        pivotConfig.CurrentLimits.SupplyCurrentLimit = Constants.Limits.Intake.PIVOT_SUPPLY_CURRENT_LIMIT;
         pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        pivotConfig.CurrentLimits.StatorCurrentLimit = consts.Limits.Intake.PIVOT_STATOR_CURRENT_LIMIT;
+        pivotConfig.CurrentLimits.StatorCurrentLimit = Constants.Limits.Intake.PIVOT_STATOR_CURRENT_LIMIT;
         pivotConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         // Configure roller motor
         Slot0Configs rollerSlot0Configs = new Slot0Configs();
-        rollerSlot0Configs.kP = consts.PID.rollerPID.kP.get();
-        rollerSlot0Configs.kI = consts.PID.rollerPID.kI.get();
-        rollerSlot0Configs.kD = consts.PID.rollerPID.kD.get();
+        rollerSlot0Configs.kP = Constants.PID.rollerPID.kP.get();
+        rollerSlot0Configs.kI = Constants.PID.rollerPID.kI.get();
+        rollerSlot0Configs.kD = Constants.PID.rollerPID.kD.get();
 
         TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
         rollerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         rollerConfig.Slot0 = rollerSlot0Configs;
-        rollerConfig.CurrentLimits.SupplyCurrentLimit = consts.Limits.Intake.ROLLER_SUPPLY_CURRENT_LIMIT;
+        rollerConfig.CurrentLimits.SupplyCurrentLimit = Constants.Limits.Intake.ROLLER_SUPPLY_CURRENT_LIMIT;
         rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        rollerConfig.CurrentLimits.StatorCurrentLimit = consts.Limits.Intake.ROLLER_STATOR_CURRENT_LIMIT;
+        rollerConfig.CurrentLimits.StatorCurrentLimit = Constants.Limits.Intake.ROLLER_STATOR_CURRENT_LIMIT;
         rollerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         motorPivot.getConfigurator().apply(pivotConfig);
@@ -113,7 +112,7 @@ public class Intaker extends SubsystemBase {
      */
     public boolean detectCoral() {
         // If the roller does not have a voltage applied, it is impossible to hold a coral so we short circuit this check
-        if (motorRoller.getSupplyVoltage().getValueAsDouble() < consts.Superstructures.Intake.ROLLER_VOLTAGE.get() / 2) {
+        if (motorRoller.getSupplyVoltage().getValueAsDouble() < Constants.Superstructures.Intake.ROLLER_VOLTAGE.get() / 2) {
             return false;
         }
 
@@ -121,8 +120,8 @@ public class Intaker extends SubsystemBase {
         double rollerVelocity = motorRoller.getVelocity().getValueAsDouble();
         double rollerCurrent = currentFilter.calculate(motorRoller.getStatorCurrent().getValueAsDouble());
 
-        if (rollerVelocity < consts.Superstructures.Intake.HAS_CORAL_VELOCITY_THRESHOLD.get() && 
-            rollerCurrent > consts.Superstructures.Intake.HAS_CORAL_CURRENT_THRESHOLD.get()) {
+        if (rollerVelocity < Constants.Superstructures.Intake.HAS_CORAL_VELOCITY_THRESHOLD.get() &&
+            rollerCurrent > Constants.Superstructures.Intake.HAS_CORAL_CURRENT_THRESHOLD.get()) {
             return true;
         }
 
@@ -140,7 +139,7 @@ public class Intaker extends SubsystemBase {
      * Start roller intake (counterclockwise) - called by RB button
      */
     public void intake() {
-        motorRoller.setControl(dutyCycleRequest.withOutput(-consts.Superstructures.Intake.ROLLER_POWER.get()));        
+        motorRoller.setControl(dutyCycleRequest.withOutput(-Constants.Superstructures.Intake.ROLLER_POWER.get()));
     }
 
     /**
@@ -154,7 +153,7 @@ public class Intaker extends SubsystemBase {
      * Start roller eject (clockwise) - called by LT button
      */
     public void eject() {
-        motorRoller.setControl(dutyCycleRequest.withOutput(consts.Superstructures.Intake.ROLLER_POWER.get()));
+        motorRoller.setControl(dutyCycleRequest.withOutput(Constants.Superstructures.Intake.ROLLER_POWER.get()));
     }
 
     /**
@@ -169,14 +168,14 @@ public class Intaker extends SubsystemBase {
      */
     public void elevate() {
         // Move pivot counterclockwise to elevated position (negative value = counterclockwise)
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.Superstructures.Intake.ELEVATED_POSITION.get()));
+        motorPivot.setControl(positionRequest.withPosition(zeroPosition - Constants.Superstructures.Intake.ELEVATED_POSITION.get()));
     }
 
     /**
      * Move pivot counterclockwise to eject position
      */
     public void goToEjectPosition() {
-        motorPivot.setControl(positionRequest.withPosition(zeroPosition - consts.Superstructures.Intake.EJECT_POSITION.get()));
+        motorPivot.setControl(positionRequest.withPosition(zeroPosition - Constants.Superstructures.Intake.EJECT_POSITION.get()));
     }
 
     /**
@@ -184,9 +183,9 @@ public class Intaker extends SubsystemBase {
      */
     public boolean isAtZero() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double homePosition = zeroPosition + consts.Superstructures.Intake.HOME_POSITION.get();
+        double homePosition = zeroPosition + Constants.Superstructures.Intake.HOME_POSITION.get();
         double positionError = Math.abs(currentPosition - homePosition);
-        return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
+        return positionError < Constants.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
     /**
@@ -194,9 +193,9 @@ public class Intaker extends SubsystemBase {
      */
     public boolean isAtHoldingPosition() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double holdingPosition = zeroPosition + consts.Superstructures.Intake.HOME_POSITION.get() + consts.Superstructures.Intake.HOLD_OFFSET.get();
+        double holdingPosition = zeroPosition + Constants.Superstructures.Intake.HOME_POSITION.get() + Constants.Superstructures.Intake.HOLD_OFFSET.get();
         double positionError = Math.abs(currentPosition - holdingPosition);
-        return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
+        return positionError < Constants.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
     /**
@@ -204,9 +203,9 @@ public class Intaker extends SubsystemBase {
      */
     public boolean isAtElevated() {
         double currentPosition = motorPivot.getPosition().getValueAsDouble();
-        double elevatedPosition = zeroPosition + consts.Superstructures.Intake.ELEVATED_POSITION.get();
+        double elevatedPosition = zeroPosition + Constants.Superstructures.Intake.ELEVATED_POSITION.get();
         double positionError = Math.abs(currentPosition - elevatedPosition);
-        return positionError < consts.Superstructures.Intake.POSITION_TOLERANCE.get();
+        return positionError < Constants.Superstructures.Intake.POSITION_TOLERANCE.get();
     }
 
     public boolean isShootFinished() {
@@ -274,7 +273,7 @@ public class Intaker extends SubsystemBase {
                 break;
             case EJECTING:
                 // If the eject timer has expired, stop the eject
-                if (timer.hasElapsed(consts.Superstructures.Intake.EJECT_TIME.get())) {
+                if (timer.hasElapsed(Constants.Superstructures.Intake.EJECT_TIME.get())) {
                     stopEject();
                     timer.stop();
                     hasCoral = false; // Reset coral detection after ejecting
@@ -320,8 +319,8 @@ public class Intaker extends SubsystemBase {
 
     private void updatePID() {
         // Check if any PID values have changed
-        boolean pivotPIDChanged = consts.PID.pivotPID.kP.hasChanged() || consts.PID.pivotPID.kI.hasChanged() || consts.PID.pivotPID.kD.hasChanged();
-        boolean rollerPIDChanged = consts.PID.rollerPID.kP.hasChanged() || consts.PID.rollerPID.kI.hasChanged() || consts.PID.rollerPID.kD.hasChanged();
+        boolean pivotPIDChanged = Constants.PID.pivotPID.kP.hasChanged() || Constants.PID.pivotPID.kI.hasChanged() || Constants.PID.pivotPID.kD.hasChanged();
+        boolean rollerPIDChanged = Constants.PID.rollerPID.kP.hasChanged() || Constants.PID.rollerPID.kI.hasChanged() || Constants.PID.rollerPID.kD.hasChanged();
 
         // If any values changed, reconfigure the motors
         if (pivotPIDChanged || rollerPIDChanged) {
@@ -360,19 +359,19 @@ public class Intaker extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Coral detection logic
-        boolean prevHasCoral = hasCoral;
-        hasCoral = detectCoral();
-        if (!prevHasCoral && hasCoral) {
-            edu.wpi.first.wpilibj.DriverStation.reportWarning("Coral detected by intake!", false);
-        }
-
-        // Process the current state of the intake subsystem
-        processWantedState();
-        processState();
-
-        updatePID();
-
-        log();
+//        // Coral detection logic
+//        boolean prevHasCoral = hasCoral;
+//        hasCoral = detectCoral();
+//        if (!prevHasCoral && hasCoral) {
+//            edu.wpi.first.wpilibj.DriverStation.reportWarning("Coral detected by intake!", false);
+//        }
+//
+//        // Process the current state of the intake subsystem
+//        processWantedState();
+//        processState();
+//
+//        updatePID();
+//
+//        log();
     }
 }

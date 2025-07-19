@@ -2,7 +2,7 @@ package frc.robot.subsystems.intake;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import frc.robot.consts.PID.pivotPID;
+import frc.robot.Constants.PID.pivotPID;
 
 public interface IntakePivotIO {
     default void updateInputs(IntakePivotIOInputs inputs) {

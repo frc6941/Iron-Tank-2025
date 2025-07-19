@@ -1,16 +1,15 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Newton;
-
-import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
-import com.pathplanner.lib.config.RobotConfig;
-
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.utils.TunableNumber;
+
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meter;
 
 /*
  * T0 Constants that are either measured, tuned, or set by the team.
  */
-public class consts {
+public class Constants {
 
     /* =============================== |
      *             CAN ID              |
@@ -26,7 +25,6 @@ public class consts {
         public static final int ENCODER_PIVOT = 8;
         public static final int MOTOR_CLIMBER = 7;
         public static final int GYRO = 0;
-
     }
 
     /* =============================== |
@@ -35,11 +33,11 @@ public class consts {
     public static final class PID {
         // ... (no changes here)
         public static final class driveMotorPID {
-            public static final TunableNumber kP = new TunableNumber("drive_kP", 1);
-            public static final TunableNumber kI = new TunableNumber("drive_kI", 0.0);
+            public static final TunableNumber kP = new TunableNumber("drive_kP", 0.3);
+            public static final TunableNumber kI = new TunableNumber("drive_kI", 0.03);
             public static final TunableNumber kD = new TunableNumber("drive_kD", 0.0);
-            public static final TunableNumber kS = new TunableNumber("drive_kS", 0.0);
-            public static final TunableNumber kV = new TunableNumber("drive_kV", 0.0);
+            public static final TunableNumber kS = new TunableNumber("drive_kS", 0.05);
+            public static final TunableNumber kV = new TunableNumber("drive_kV", 0.2);
             public static final TunableNumber kA = new TunableNumber("drive_kA", 0.0);
             public static final TunableNumber kG = new TunableNumber("drive_kG", 0.0);
         }
@@ -74,8 +72,13 @@ public class consts {
      * ============================== */
     // *** NEW: Constants for the Cheesy Drive implementation ***
     public static final class Drive {
+        // Mechanism
+        public static final double GEAR_RATIO = 8.45;
+        public static final Distance WHEEL_DIAMETER = Inches.of(6);
+        public static final Distance TRACK_WIDTH = Meter.of(0.667);
+
         // Deadband for the joysticks. Any input below this value will be treated as zero.
-        public static final double DEADBAND = 0.1;
+        public static final double DEADBAND = 0.02;
         
         // A threshold for when the robot is considered "slow" enough to allow turning in place.
         public static final double QUICK_TURN_THRESHOLD = 0.2;
@@ -168,8 +171,8 @@ public class consts {
         public static final class Chassis {
             public static final double MAX_VELOCITY = 10.0;
             public static final double MAX_OUTPUT = 0.8;
-            public static final double DRIVE_SUPPLY_CURRENT_LIMIT = 40.0;
-            public static final double DRIVE_STATOR_CURRENT_LIMIT = 40.0;
+            public static final double DRIVE_SUPPLY_CURRENT_LIMIT = 100.0;
+            public static final double DRIVE_STATOR_CURRENT_LIMIT = 100.0;
         }
 
         public static final class Intake {

@@ -8,7 +8,7 @@ import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.VoltageUnit;
-import frc.robot.consts;
+import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.Volts;
 
@@ -16,7 +16,7 @@ public class IntakePivotIOSim implements IntakePivotIO {
     private static final double moi = 1.0;
     private static final double cgRadius = 0.2;
     private static final DCMotor gearbox =
-            DCMotor.getKrakenX60Foc(1).withReduction(consts.Sensors.Encoder.ROTOR_TO_SENSOR_RATIO);
+            DCMotor.getKrakenX60Foc(1).withReduction(Constants.Sensors.Encoder.ROTOR_TO_SENSOR_RATIO);
     private static final Matrix<N2, N2> A =
             MatBuilder.fill(
                     Nat.N2(),
@@ -44,7 +44,7 @@ public class IntakePivotIOSim implements IntakePivotIO {
     @Override
     public void updateInputs(IntakePivotIOInputs inputs) {
 
-        for (int i = 0; i < consts.LOOPER_DT / (1.0 / 1000.0); i++) {
+        for (int i = 0; i < Constants.LOOPER_DT / (1.0 / 1000.0); i++) {
             setInputTorqueCurrent(
                     controller.calculate(simState.get(0)));
             update(1.0 / 1000.0);
