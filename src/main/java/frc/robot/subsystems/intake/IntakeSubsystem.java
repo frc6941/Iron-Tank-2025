@@ -3,13 +3,13 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.consts;
+import frc.robot.Constants;
 import frc.robot.SuperstructureVisualizer;
 import frc.robot.subsystems.roller.RollerIOInputsAutoLogged;
 import frc.robot.subsystems.roller.RollerSubsystem;
 import org.littletonrobotics.junction.Logger;
 
-import static frc.robot.consts.Superstructures.Intake.*;
+import static frc.robot.Constants.Superstructures.Intake.*;
 
 import java.util.function.Supplier;
 
@@ -91,7 +91,7 @@ public class IntakeSubsystem extends RollerSubsystem {
                 break;
         }
 
-        if (consts.TUNING) {
+        if (Constants.TUNING) {
             deployAngle = DEPLOY_ANGLE.get();
             shootVoltage = SHOOT_VOLTAGE.get();
             homeAngle = HOME_ANGLE.get();

@@ -28,11 +28,11 @@ public class RobotContainer {
   private boolean climberReadyToClimb = false;
 
   public RobotContainer() {
-//    if (RobotBase.isReal()) {
-//      intakeSubsystem = new IntakeSubsystem(new IntakePivotIOReal(), new IntakeRollerIOReal());
-//    } else {
-//      intakeSubsystem = new IntakeSubsystem(new IntakePivotIOSim(), new IntakeRollerIOSim());
-//    }
+    if (RobotBase.isReal()) {
+      intakeSubsystem = new IntakeSubsystem(new IntakePivotIOReal(), new IntakeRollerIOReal());
+    } else {
+      intakeSubsystem = new IntakeSubsystem(new IntakePivotIOSim(), new IntakeRollerIOSim());
+    }
 
     configureBindings();
     autoChooser.addOption("Left", AutoBuilder.buildAuto("Left")); 
@@ -44,26 +44,15 @@ public class RobotContainer {
 
   private void configureBindings() {
     
-    // *** MODIFIED: Default drive command now uses Cheesy Drive ***
-    driveSubsystem.setDefaultCommand(new RunCommand(() -> {
-        // Get joystick values
-        // Left stick Y for forward/backward movement
-        double forward = -mainController.getLeftY();
+    drive.setDefaultCommand(Commands.run(() -> {
+      double v1 = -mainController.getLeftY();
+      double v2 = -mainController.getRightX();
 
-        // Right stick X for turning, inverted as in the original code
-        double rotation = -mainController.getRightX();
-
-        // Determine if quick turn should be active.
-        // This is true if the driver is not commanding significant forward/backward speed.
-        boolean isQuickTurn = Math.abs(forward) < consts.Drive.QUICK_TURN_THRESHOLD;
-
-        // Apply the inputs to the new Cheesy Drive method in the subsystem
-        driveSubsystem.cheesyDrive(forward, rotation, isQuickTurn);
-
-      }, driveSubsystem));
+      double vX = v1 * 5.0; // theoretical max speed: 5.676 mps
+      double omega = Math.signum(v2) * v2 * v2 * 10.0;
+      drive.runTwist(new ChassisSpeeds(vX, 0.0, omega));
+    }, drive));
     
-    // ... (No changes to any other bindings for Intake or Climber)
-
     // B button - Move pivot back to home position
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
       System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
@@ -118,90 +107,6 @@ public class RobotContainer {
       return 0;
     }
     return value;
-  }
-
-  private void configureBindings() {
-
-    // *** MODIFIED: Default drive command now uses Cheesy Drive ***
-//    driveSubsystem.setDefaultCommand(new RunCommand(() -> {
-//        // Get joystick values
-//        // Left stick Y for forward/backward movement
-//        double forward = -mainController.getLeftY();
-//
-//        // Right stick X for turning, inverted as in the original code
-//        double rotation = -mainController.getRightX();
-//
-//        // Determine if quick turn should be active.
-//        // This is true if the driver is not commanding significant forward/backward speed.
-//        boolean isQuickTurn = Math.abs(forward) < Constants.Drive.QUICK_TURN_THRESHOLD;
-//
-//        // Apply the inputs to the new Cheesy Drive method in the subsystem
-//        driveSubsystem.cheesyDrive(forward, rotation, isQuickTurn);
-//
-//      }, driveSubsystem));
-
-    drive.setDefaultCommand(Commands.run(() -> {
-      double v1 = -mainController.getLeftY();
-      double v2 = -mainController.getRightX();
-
-      double vX = v1 * 5.0; // theoretical max speed: 5.676 mps
-      double omega = Math.signum(v2) * v2 * v2 * 10.0;
-      drive.runTwist(new ChassisSpeeds(vX, 0.0, omega));
-    }, drive));
-
-    // ... (No changes to any other bindings for Intake or Climber)
-
-//    // B button - Move pivot back to zero position
-//    mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
-//      System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
-//      intakeSubsystem.setWantedState(WantedState.HOME);
-//    }));
-//
-//    // Left Bumper (LB) - Elevate pivot
-//    mainController.a().onTrue(intakeSubsystem.runOnce(() -> {
-//      System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
-//      intakeSubsystem.setWantedState(WantedState.DEPLOY_WITHOUT_ROLL);
-//    }));
-//
-//    // Left Trigger (LT)
-//    // We don't need this anymore - this should be auto-processed
-//    // mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
-//    //   System.out.println("=== LT PRESSED - Elevating pivot ===");
-//    //   intakeSubsystem.goToEjectPosition();
-//    // }));
-//
-//    // Right Trigger (RT) - Eject while held
-//    mainController.x().onTrue(intakeSubsystem.runOnce(() -> {
-//      System.out.println("=== RT HELD - Ejecting ===");
-//      intakeSubsystem.setWantedState(WantedState.SHOOT);
-//      ;
-//    }));
-//    // This is auto-processed, so we don't need a release command
-//    // mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
-//    //   System.out.println("=== RT RELEASED - Stopping eject ===");
-//    //   intakeSubsystem.stopEject();
-//    // }));
-//
-//    // Right Bumper (RB) - Start intake, auto stop
-//    mainController.y().onTrue(intakeSubsystem.runOnce(() -> {
-//      System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
-//      intakeSubsystem.setWantedState(WantedState.DEPLOY_INTAKE);
-//    }));
-
-//    // Climber Controls
-//    mainController.x().onTrue(climberSubsystem.runOnce(() -> {
-//      if (!climberSubsystem.isAtStartPosition()) {
-//        System.out.println("=== X BUTTON PRESSED - Move to start climb position ===");
-//        climberSubsystem.goToStartClimb();
-//      } else {
-//        System.out.println("=== X BUTTON PRESSED - Start climbing for 5 seconds ===");
-//        climberSubsystem.startClimbFor5Sec();
-//      }
-//    }));
-//    mainController.a().onTrue(climberSubsystem.runOnce(() -> {
-//      System.out.println("=== A BUTTON PRESSED - Move to zero position ===");
-//      climberSubsystem.goToZero();
-//    }));
   }
 
   public Command getAutonomousCommand() {
