@@ -7,6 +7,11 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPLTVController;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +22,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -44,14 +52,43 @@ public class Drive extends SubsystemBase {
     kinematics = new DifferentialDriveKinematics(Constants.Drive.TRACK_WIDTH);
     poseEstimator = new DifferentialDrivePoseEstimator(
         kinematics,
-//        gyro.getRotation2d(),
-        new Rotation2d(),
+        gyro.getRotation2d(),
         motorAngleToDrivePosition(motorLeft.getPosition().getValue()).in(Meters),
         motorAngleToDrivePosition(motorRight.getPosition().getValue()).in(Meters),
         new Pose2d()
     );
 
     configure();
+
+    RobotConfig autoConfig = null;
+        try{
+        autoConfig = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+        // Handle exception as needed
+        e.printStackTrace();
+        }
+
+        // Configure AutoBuilder last
+        AutoBuilder.configure(
+            this::getPose, // Robot pose supplier
+            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> runTwist(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
+            autoConfig, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+        );
   }
 
   private static Distance motorAngleToDrivePosition(Angle angle) {
@@ -159,6 +196,27 @@ public class Drive extends SubsystemBase {
     Logger.recordOutput(TAG + "/WheelSpeedsDes", wheelSpeedsDes);
     Logger.recordOutput(TAG + "/WheelSpeedsCurr", wheelsSpeedCurr);
   }
+
+  public Pose2d getPose(){
+    return poseEstimator.getEstimatedPosition();
+  }
+
+  public void resetPose(Pose2d pose){
+    poseEstimator.resetPose(pose);
+  }
+
+  public Command followPathCommand(String pathName) {
+        try {
+            // Load path from PathPlanner
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+            
+            // Create the command to follow the path
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Error loading path: " + e.getMessage(), e.getStackTrace());
+            return Commands.none();
+        }
+    }
 
   @Override
   public void periodic() {
