@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -25,15 +26,12 @@ import static edu.wpi.first.units.Units.*;
 public class Drive extends SubsystemBase {
   private static final String TAG = "Drive";
 
-//  private final TalonFX motorLeft = new TalonFX(Constants.CANID.MOTOR_LEFT);
-//  private final TalonFX motorLeftFollower = new TalonFX(Constants.CANID.MOTOR_LEFT_FOLLEWER);
-//  private final TalonFX motorRight = new TalonFX(Constants.CANID.MOTOR_RIGHT);
-//  private final TalonFX motorRightFollower = new TalonFX(Constants.CANID.MOTOR_RIGHT_FOLLOWER);
+  private final TalonFX motorLeft = new TalonFX(Constants.CANID.MOTOR_LEFT);
+  private final TalonFX motorLeftFollower = new TalonFX(Constants.CANID.MOTOR_LEFT_FOLLEWER);
+  private final TalonFX motorRight = new TalonFX(Constants.CANID.MOTOR_RIGHT);
+  private final TalonFX motorRightFollower = new TalonFX(Constants.CANID.MOTOR_RIGHT_FOLLOWER);
 
-  private final TalonFX motorLeft = new TalonFX(0);
-  private final TalonFX motorRight = new TalonFX(1);
-
-//  private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(Constants.CANID.GYRO);
+  private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(Constants.CANID.GYRO);
 
   private final TalonFXConfiguration config = new TalonFXConfiguration();
   private final VelocityVoltage leftVelocityRequest = new VelocityVoltage(0);
