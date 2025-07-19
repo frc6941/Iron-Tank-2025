@@ -6,10 +6,10 @@ import frc.robot.subsystems.ClimberSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+// import edu.wpi.first.wpilibj2.command.WaitCommand;
+// import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+// import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+// import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -86,18 +86,19 @@ public class RobotContainer {
       }
     }));
 
-    // Climber Controls
+    // Climber Controls、】【
+
+    mainController.y().onTrue(climberSubsystem.runOnce(() -> {
+      System.out.println("=== Y BUTTON PRESSED - Move climber down (voltage -4) ===");
+      climberSubsystem.moveDown();
+    }));
     mainController.a().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== A BUTTON PRESSED - Move climber to zero position ===");
-      climberSubsystem.goToZeroPosition();
+      System.out.println("=== A BUTTON PRESSED - Move climber up (voltage +4) ===");
+      climberSubsystem.moveUp();
     }));
     mainController.x().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== X BUTTON PRESSED - Move climber to start position ===");
-      climberSubsystem.goToStartPosition();
-    }));
-    mainController.y().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== Y BUTTON PRESSED - Move climber to stop position ===");
-      climberSubsystem.goToStopPosition();
+      System.out.println("=== X BUTTON PRESSED - Stop climber ===");
+      climberSubsystem.stop();
     }));
   }
 

@@ -17,9 +17,9 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.consts;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
+// import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+// import edu.wpi.first.wpilibj2.command.WaitCommand;
+// import edu.wpi.first.wpilibj2.command.RunCommand;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -31,7 +31,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // Controls
     private final PositionVoltage positionRequest = new PositionVoltage(0);
-    private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+    // private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
 
 

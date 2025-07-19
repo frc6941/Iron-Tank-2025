@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.Follower;
+// import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -28,9 +28,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Motors
     private static final TalonFX leftMotor = new TalonFX(consts.CANID.LEFTMOTOR);
-    private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.LEFTMOTORFOLLEWER);
     private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
-    private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
@@ -48,7 +46,7 @@ public class DriveSubsystem extends SubsystemBase {
     private double mOldWheel = 0.0;
     private double mNegInertiaAccumulator = 0.0;
 
-    public static final TunableNumber CLIMBER_VOLTAGE = new TunableNumber("climber_voltage", 4.0); // default value, adjust as needed
+    
 
     public DriveSubsystem() {
         // Configure the motors
@@ -109,10 +107,6 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
         leftMotor.getConfigurator().apply(leftTalonFXConfig);
         rightMotor.getConfigurator().apply(rightTalonFXConfig);
-        leftMotorFollower.getConfigurator().apply(leftTalonFXConfig);
-        rightMotorFollower.getConfigurator().apply(rightTalonFXConfig);
-        leftMotorFollower.setControl(new Follower(leftMotor.getDeviceID(), false));
-        rightMotorFollower.setControl(new Follower(rightMotor.getDeviceID(), false));
     }
 
     public TalonFXConfiguration generateTalonFXConfig (
@@ -353,13 +347,6 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Left/Master/Current", leftMotor.getStatorCurrent().getValue());
         Logger.recordOutput("Drive/Left/Master/Voltage", leftMotor.getSupplyVoltage().getValue());
         
-        // Follower
-        Logger.recordOutput("Drive/Left/Follower/Position", leftMotorFollower.getPosition().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Velocity", leftMotorFollower.getVelocity().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Acceleration", leftMotorFollower.getAcceleration().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Current", leftMotorFollower.getStatorCurrent().getValue());
-        Logger.recordOutput("Drive/Left/Follower/Voltage", leftMotorFollower.getSupplyVoltage().getValue());
-
         // Right Motors
         // Master
         Logger.recordOutput("Drive/Right/Master/Position", rightMotor.getPosition().getValue());
@@ -368,37 +355,16 @@ public class DriveSubsystem extends SubsystemBase {
         Logger.recordOutput("Drive/Right/Master/Current", rightMotor.getStatorCurrent().getValue());
         Logger.recordOutput("Drive/Right/Master/Voltage", rightMotor.getSupplyVoltage().getValue());
 
-        // // Follower
-        Logger.recordOutput("Drive/Right/Follower/Position", rightMotorFollower.getPosition().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Velocity", rightMotorFollower.getVelocity().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Acceleration", rightMotorFollower.getAcceleration().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Current", rightMotorFollower.getStatorCurrent().getValue());
-        Logger.recordOutput("Drive/Right/Follower/Voltage", rightMotorFollower.getSupplyVoltage().getValue());
-
         // Wheel-specific logging (combined master + follower data)
         // Left wheel velocity (average of master and follower)
-        double leftWheelVelocity = (leftMotor.getVelocity().getValueAsDouble() + leftMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
-        Logger.recordOutput("Drive/Wheels/Left/Velocity", leftWheelVelocity);
-        
-        // Right wheel velocity (average of master and follower)
-        double rightWheelVelocity = (rightMotor.getVelocity().getValueAsDouble() + rightMotorFollower.getVelocity().getValueAsDouble()) / 2.0;
-        Logger.recordOutput("Drive/Wheels/Right/Velocity", rightWheelVelocity);
-        
-        // Left wheel current (sum of master and follower)
-        double leftWheelCurrent = leftMotor.getStatorCurrent().getValueAsDouble() + leftMotorFollower.getStatorCurrent().getValueAsDouble();
-        Logger.recordOutput("Drive/Wheels/Left/Current", leftWheelCurrent);
-        
-        // Right wheel current (sum of master and follower)
-        double rightWheelCurrent = rightMotor.getStatorCurrent().getValueAsDouble() + rightMotorFollower.getStatorCurrent().getValueAsDouble();
-        Logger.recordOutput("Drive/Wheels/Right/Current", rightWheelCurrent);
-        
-        // Wheel velocity in meters per second (converted from rotations per second)
-        double leftWheelVelocityMPS = leftWheelVelocity * METERS_PER_ROTATION;
-        double rightWheelVelocityMPS = rightWheelVelocity * METERS_PER_ROTATION;
+        Logger.recordOutput("Drive/Wheels/Left/Velocity", leftMotor.getVelocity().getValue());
+        Logger.recordOutput("Drive/Wheels/Right/Velocity", rightMotor.getVelocity().getValue());
+        Logger.recordOutput("Drive/Wheels/Left/Current", leftMotor.getStatorCurrent().getValue());
+        Logger.recordOutput("Drive/Wheels/Right/Current", rightMotor.getStatorCurrent().getValue());
+        double leftWheelVelocityMPS = leftMotor.getVelocity().getValueAsDouble() * METERS_PER_ROTATION;
+        double rightWheelVelocityMPS = rightMotor.getVelocity().getValueAsDouble() * METERS_PER_ROTATION;
         Logger.recordOutput("Drive/Wheels/Left/VelocityMPS", leftWheelVelocityMPS);
         Logger.recordOutput("Drive/Wheels/Right/VelocityMPS", rightWheelVelocityMPS);
-        
-        // Average wheel velocity for overall robot speed
         double averageWheelVelocityMPS = (leftWheelVelocityMPS + rightWheelVelocityMPS) / 2.0;
         Logger.recordOutput("Drive/Wheels/AverageVelocityMPS", averageWheelVelocityMPS);
     }
