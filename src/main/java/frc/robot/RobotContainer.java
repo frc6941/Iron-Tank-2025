@@ -11,15 +11,16 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.intake.IntakeSubsystem.SystemState;
 import frc.robot.subsystems.intake.IntakeSubsystem.WantedState;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 //  private final DriveSubsystem driveSubsystem = new DriveSubsystem();
   private final Drive drive = new Drive();
-//  private final IntakeSubsystem intakeSubsystem;
-//  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-//  private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
+  private final IntakeSubsystem intakeSubsystem;
+  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  private final SendableChooser<Command> autoChooser = AutoBuilder.buildAutoChooser();
 
   // Creates the Xbox controller to drive the robot
   CommandXboxController mainController = new CommandXboxController(0);
@@ -34,11 +35,81 @@ public class RobotContainer {
 //    }
 
     configureBindings();
-//    autoChooser.addOption("Left", AutoBuilder.buildAuto("Left"));
-//    autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
-//    autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
-//    SmartDashboard.putData("Chooser", autoChooser);
+    autoChooser.addOption("Left", AutoBuilder.buildAuto("Left")); 
+    autoChooser.addOption("Mid", AutoBuilder.buildAuto("Mid"));
+    autoChooser.addOption("Right", AutoBuilder.buildAuto("Right"));
+    SmartDashboard.putData("Chooser", autoChooser);
 
+  }
+
+  private void configureBindings() {
+    
+    // *** MODIFIED: Default drive command now uses Cheesy Drive ***
+    driveSubsystem.setDefaultCommand(new RunCommand(() -> {
+        // Get joystick values
+        // Left stick Y for forward/backward movement
+        double forward = -mainController.getLeftY();
+
+        // Right stick X for turning, inverted as in the original code
+        double rotation = -mainController.getRightX();
+
+        // Determine if quick turn should be active.
+        // This is true if the driver is not commanding significant forward/backward speed.
+        boolean isQuickTurn = Math.abs(forward) < consts.Drive.QUICK_TURN_THRESHOLD;
+
+        // Apply the inputs to the new Cheesy Drive method in the subsystem
+        driveSubsystem.cheesyDrive(forward, rotation, isQuickTurn);
+
+      }, driveSubsystem));
+    
+    // ... (No changes to any other bindings for Intake or Climber)
+
+    // B button - Move pivot back to home position
+    mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
+      intakeSubsystem.setWantedState(WantedState.HOME);;
+    }));
+
+    // Left Bumper (LB) - Elevate pivot
+    mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
+      intakeSubsystem.setWantedState(WantedState.DEPLOY_WITHOUT_ROLL);
+    }));
+
+    // Right Trigger (RT) - Eject while held
+    mainController.rightTrigger().whileTrue(intakeSubsystem.run(() -> {
+      System.out.println("=== RT HELD - Ejecting ===");
+      intakeSubsystem.setWantedState(WantedState.HOLD_SHOOT);
+    }));
+    mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== RT RELEASED - Stopping eject ===");
+      intakeSubsystem.setWantedState(WantedState.HOLD);
+    }));
+
+    // Right Bumper (RB) - Toggle intake (first press: start, second: stop)
+    mainController.rightBumper().toggleOnTrue(intakeSubsystem.runOnce(() -> {
+      System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
+      if (intakeSubsystem.getSystemState() == SystemState.DEPLOY_INTAKING) {
+        intakeSubsystem.setWantedState(WantedState.DEPLOY_WITHOUT_ROLL);
+      } else {
+        intakeSubsystem.setWantedState(WantedState.DEPLOY_INTAKE);
+      }
+    }));
+
+    // Climber Controls
+    mainController.x().onTrue(climberSubsystem.runOnce(() -> {
+      if (!climberSubsystem.isAtStartPosition()) {
+        System.out.println("=== X BUTTON PRESSED - Move to start climb position ===");
+        climberSubsystem.goToStartClimb();
+      } else {
+        System.out.println("=== X BUTTON PRESSED - Start climbing for 5 seconds ===");
+        climberSubsystem.startClimbFor5Sec();
+      }
+    }));
+    mainController.a().onTrue(climberSubsystem.runOnce(() -> {
+      System.out.println("=== A BUTTON PRESSED - Move to zero position ===");
+      climberSubsystem.goToZero();
+    }));
   }
 
   // This deadband method is no longer used for drive, but kept for potential other uses

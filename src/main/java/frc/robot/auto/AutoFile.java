@@ -14,8 +14,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class AutoFile {
-    private final AutoActions autoActions = new AutoActions();
+    private final AutoActions autoActions;
     private final Map<String, PathPlannerPath> autoPaths = new HashMap<>();
+
+    public AutoFile(AutoActions autoActions) {
+        this.autoActions = autoActions;
+    }
     
     private PathPlannerPath getAutoPath(String path) {
         assert autoPaths.containsKey(path);

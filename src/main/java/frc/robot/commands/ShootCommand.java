@@ -1,23 +1,23 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Intaker;
-import frc.robot.subsystems.Intaker.WantedState;
+import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem.WantedState;
 
 public class ShootCommand extends Command{
-    private final Intaker intakeSubsystem;
+    private final IntakeSubsystem intakeSubsystem;
 
-    public ShootCommand(Intaker intakeSubsystem) {
+    public ShootCommand(IntakeSubsystem intakeSubsystem) {
         this.intakeSubsystem = intakeSubsystem;
     }
 
     @Override
     public void execute(){
-        intakeSubsystem.setWantedState(WantedState.EJECT);
+        intakeSubsystem.setWantedState(WantedState.HOLD_SHOOT);
     }
 
     @Override
     public void end(boolean interrupted) {
-        intakeSubsystem.setWantedState(WantedState.ZERO);
+        intakeSubsystem.setWantedState(WantedState.HOLD);
     }
 }
