@@ -1,3 +1,7 @@
+// Copyright (c) 2024 FRC 6941 Inc. All Rights Reserved.
+//
+// Tämä on niin huipputeknologiaa, että se puhuu suomea.
+// This is so high-tech that it speaks Finnish.
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.Logger;
@@ -12,15 +16,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import edu.wpi.first.wpilibj.Timer;
 
 public class ClimberSubsystem extends SubsystemBase {
     private final TalonFX climberMotor = new TalonFX(Constants.CANID.MOTOR_CLIMBER);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
-    private final Timer climbTimer = new Timer();
-    private boolean atStartPosition = false;
-    private boolean climbing = false;
+
 
     public ClimberSubsystem() {
         configureMotor();
@@ -32,67 +33,16 @@ public class ClimberSubsystem extends SubsystemBase {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         climberMotor.getConfigurator().apply(config);
     }
-
-    /** Set climber voltage (tunable) */
-    public void setClimberVoltage() {
-        double voltage = Constants.CLIMBER_VOLTAGE.get();
-        System.out.println("ClimberSubsystem: setClimberVoltage() called, voltage: " + voltage);
-        climberMotor.setControl(voltageRequest.withOutput(voltage));
-        Logger.recordOutput("Climber/SetVoltage", voltage);
+    public void moveUp() {
+        climberMotor.setControl(voltageRequest.withOutput(4.0));
     }
-
-    /** Stop climbing */
-    public void stopClimb() {
+    public void moveDown() {
+        climberMotor.setControl(voltageRequest.withOutput(-4.0));
+    }
+    public void stop() {
         climberMotor.setControl(dutyCycleRequest.withOutput(0.0));
     }
 
-    /** Move climber to start climb position */
-    public void goToStartClimb() {
-        double pos = Constants.CLIMBER_START_POSITION.get();
-        System.out.println("ClimberSubsystem: goToStartClimb() called, position: " + pos);
-        // For example, use position control if available, else just set voltage for now
-        climberMotor.setControl(voltageRequest.withOutput(Constants.CLIMBER_VOLTAGE.get()));
-        atStartPosition = true;
-        climbing = false;
-        Logger.recordOutput("Climber/GoToStartClimb", pos);
-    }
-
-    /** Move climber to zero position */
-    public void goToZero() {
-        double pos = Constants.CLIMBER_ZERO_POSITION.get();
-        System.out.println("ClimberSubsystem: goToZero() called, position: " + pos);
-        // For example, use position control if available, else just set voltage for now
-        climberMotor.setControl(voltageRequest.withOutput(-Constants.CLIMBER_VOLTAGE.get()));
-        atStartPosition = false;
-        climbing = false;
-        Logger.recordOutput("Climber/GoToZero", pos);
-    }
-
-    /** Start climbing for 5 seconds */
-    public void startClimbFor5Sec() {
-        System.out.println("ClimberSubsystem: startClimbFor5Sec() called");
-        climbTimer.reset();
-        climbTimer.start();
-        climbing = true;
-        atStartPosition = false;
-    }
-
-    /** Call this periodically to handle timed climb */
-    public void handleTimedClimb() {
-        if (climbing) {
-            if (climbTimer.get() < 5.0) {
-                climberMotor.setControl(voltageRequest.withOutput(Constants.CLIMBER_VOLTAGE.get()));
-            } else {
-                stopClimb();
-                climbing = false;
-                climbTimer.stop();
-            }
-        }
-    }
-
-    public boolean isAtStartPosition() {
-        return atStartPosition;
-    }
 
     @Override
     public void periodic() {
@@ -100,6 +50,6 @@ public class ClimberSubsystem extends SubsystemBase {
         Logger.recordOutput("Climber/Velocity", climberMotor.getVelocity().getValue());
         Logger.recordOutput("Climber/Current", climberMotor.getStatorCurrent().getValue());
         Logger.recordOutput("Climber/Voltage", climberMotor.getSupplyVoltage().getValue());
-        handleTimedClimb();
+        // handlePositionMovement();
     }
 }
