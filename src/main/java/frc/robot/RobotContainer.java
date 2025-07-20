@@ -114,7 +114,7 @@ public class RobotContainer {
     return new SequentialCommandGroup(
       // Move forward for 3 seconds (arcade drive) and move pivot to eject position at the same time
       new ParallelCommandGroup(
-        new RunCommand(() -> driveSubsystem.arcadeDrive(0.5, 0.0), driveSubsystem).withTimeout(2.5),
+        new RunCommand(() -> driveSubsystem.arcadeDrive(0.5, 0.0), driveSubsystem).withTimeout(3.0),
         intakeSubsystem.runOnce(() -> intakeSubsystem.goToEjectPosition())
       ),
       // Stop

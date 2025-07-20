@@ -28,11 +28,11 @@ public class consts {
     public static final class PID {
         // ... (no changes here)
         public static final class driveMotorPID {
-            public static final TunableNumber kP = new TunableNumber("drive_kP", 1);
+            public static final TunableNumber kP = new TunableNumber("drive_kP", 0.225);
             public static final TunableNumber kI = new TunableNumber("drive_kI", 0.0);
             public static final TunableNumber kD = new TunableNumber("drive_kD", 0.0);
             public static final TunableNumber kS = new TunableNumber("drive_kS", 0.0);
-            public static final TunableNumber kV = new TunableNumber("drive_kV", 0.0);
+            public static final TunableNumber kV = new TunableNumber("drive_kV", 0.01);
             public static final TunableNumber kA = new TunableNumber("drive_kA", 0.0);
             public static final TunableNumber kG = new TunableNumber("drive_kG", 0.0);
         }
@@ -65,7 +65,7 @@ public class consts {
     // *** NEW: Constants for the Cheesy Drive implementation ***
     public static final class Drive {
         // Deadband for the joysticks. Any input below this value will be treated as zero.
-        public static final double DEADBAND = 0.1;
+        public static final double DEADBAND = 0.06;
         
         // A threshold for when the robot is considered "slow" enough to allow turning in place.
         public static final double QUICK_TURN_THRESHOLD = 0.2;
@@ -103,8 +103,6 @@ public class consts {
             public static final double PIVOT_MIN_ANGLE = 0.0; // Minimum angle in degrees
             public static final double HOLD_ANGLE_OFFSET = 0.5; // Hold position offset from zero in rotations
             public static final double POSITION_TOLERANCE = 0.05; // Position tolerance in rotations
-
-            public static final double L1 = 100; // Height in degrees for L1 state
         }
     }
 
@@ -132,9 +130,9 @@ public class consts {
      * ============================== */
     // ... (no changes here)
     public static final boolean TUNING = true;
-    public static final TunableNumber INTAKE_ROLLER_POWER = new TunableNumber("intake_roller_power", 1.0);
+    public static final TunableNumber INTAKE_ROLLER_POWER = new TunableNumber("intake_roller_power", 0.8);
     public static final TunableNumber INTAKE_HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
-    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.46);
+    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.4575);
     public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
     public static final TunableNumber INTAKE_HOME_POSITION = new TunableNumber("intake_home_position", 0.0);
     public static final TunableNumber INTAKE_PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.7);
