@@ -11,7 +11,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.path.PathPlannerPath;
-
+import com.ctre.phoenix6.controls.Follower;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -144,6 +144,8 @@ public class Drive extends SubsystemBase {
             .withInverted(InvertedValue.Clockwise_Positive)
             .withNeutralMode(NeutralModeValue.Coast)
     );
+    motorLeftFollower.setControl(new Follower(motorLeft.getDeviceID(), false));
+    motorRightFollower.setControl(new Follower(motorRight.getDeviceID(), false));
   }
 
   private void reconfigure() {
