@@ -7,7 +7,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -138,7 +137,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void startIntake() {
         System.out.println("IntakeSubsystem: startIntake() called");
-        double power = -consts.INTAKE_ROLLER_POWER.get()+0.2;
+        double power = -consts.INTAKE_ROLLER_POWER.get()-0.2;
         System.out.println("IntakeSubsystem: Starting intake with power: " + power);
         rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isIntaking = true;

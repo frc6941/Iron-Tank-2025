@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-// import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -29,6 +29,8 @@ public class DriveSubsystem extends SubsystemBase {
     // Motors
     private static final TalonFX leftMotor = new TalonFX(consts.CANID.LEFTMOTOR);
     private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
+    private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.LEFTMOTORFOLLEWER);
+    private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
@@ -107,6 +109,8 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
         leftMotor.getConfigurator().apply(leftTalonFXConfig);
         rightMotor.getConfigurator().apply(rightTalonFXConfig);
+        leftMotorFollower.setControl(new Follower(leftMotor.getDeviceID(), false));
+        rightMotorFollower.setControl(new Follower(rightMotor.getDeviceID(), false));
     }
 
     public TalonFXConfiguration generateTalonFXConfig (

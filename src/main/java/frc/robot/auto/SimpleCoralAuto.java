@@ -9,8 +9,8 @@ public class SimpleCoralAuto extends Command {
     private DriveSubsystem driveSubsystem;
     private IntakeSubsystem intakeSubsystem;
     private Timer timer;
-    private double drive_seconds = 3.0;
-    private double exjest_seconds = 4.0;
+    private double drive_seconds = 1.4;
+    private double exjest_seconds = 2.4;
 
     /**
      * This auto will have the robot drive forwards, stop, then drop the coral into L1
@@ -54,7 +54,7 @@ public class SimpleCoralAuto extends Command {
     if(timer.get() < drive_seconds)
     {
         driveSubsystem.arcadeDrive(0.5, 0);
-        intakeSubsystem.runOnce(() -> intakeSubsystem.goToEjectPosition());
+        intakeSubsystem.goToEjectPosition();
     }
     /**
      * Once the timer is greater than drive_seconds but less than exjest seconds,
@@ -74,6 +74,7 @@ public class SimpleCoralAuto extends Command {
     // stop drive motors
     driveSubsystem.arcadeDrive(0.0, 0.0);
     intakeSubsystem.goToZero();
+    intakeSubsystem.stopRoller();
     timer.stop();
   }
 
