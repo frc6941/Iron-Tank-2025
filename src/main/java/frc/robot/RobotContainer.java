@@ -2,6 +2,7 @@ package frc.robot;
 
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.auto.SimpleCoralAuto;
 import frc.robot.subsystems.ClimberSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -87,16 +88,19 @@ public class RobotContainer {
     }));
 
     // Climber Controls、】【
-
     mainController.y().onTrue(climberSubsystem.runOnce(() -> {
+      System.out.println("=== Y BUTTON PRESSED - Move climber down (voltage -4) ===");
+      climberSubsystem.moveUp();
+    }));
+    mainController.y().onFalse(climberSubsystem.runOnce(() -> {
+      System.out.println("=== Y BUTTON PRESSED - Move climber down (voltage -4) ===");
+      climberSubsystem.stop();
+    }));
+    mainController.x().onTrue(climberSubsystem.runOnce(() -> {
       System.out.println("=== Y BUTTON PRESSED - Move climber down (voltage -4) ===");
       climberSubsystem.moveDown();
     }));
-    mainController.a().onTrue(climberSubsystem.runOnce(() -> {
-      System.out.println("=== A BUTTON PRESSED - Move climber up (voltage +4) ===");
-      climberSubsystem.moveUp();
-    }));
-    mainController.x().onTrue(climberSubsystem.runOnce(() -> {
+    mainController.x().onFalse(climberSubsystem.runOnce(() -> {
       System.out.println("=== X BUTTON PRESSED - Stop climber ===");
       climberSubsystem.stop();
     }));
@@ -111,18 +115,19 @@ public class RobotContainer {
   }
   
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(
-      // Move forward for 3 seconds (arcade drive) and move pivot to eject position at the same time
-      new ParallelCommandGroup(
-        new RunCommand(() -> driveSubsystem.arcadeDrive(0.5, 0.0), driveSubsystem).withTimeout(3.0),
-        intakeSubsystem.runOnce(() -> intakeSubsystem.goToEjectPosition())
-      ),
-      // Stop
-      new RunCommand(() -> driveSubsystem.arcadeDrive(0.0, 0.0), driveSubsystem).withTimeout(0.1),
-      // Eject for 2 seconds
-      new RunCommand(() -> intakeSubsystem.startEject(), intakeSubsystem).withTimeout(1.0),
-      // Stop eject
-      intakeSubsystem.runOnce(() -> intakeSubsystem.stopEject())
-    );
+    // return new SequentialCommandGroup(
+    //   // Move forward for 3 seconds (arcade drive) and move pivot to eject position at the same time
+    //   new ParallelCommandGroup(
+    //     new RunCommand(() -> driveSubsystem.arcadeDrive(0.5, 0.0), driveSubsystem).withTimeout(3.0),
+    //     intakeSubsystem.runOnce(() -> intakeSubsystem.goToEjectPosition())
+    //   ),
+    //   // Stop
+    //   new RunCommand(() -> driveSubsystem.arcadeDrive(0.0, 0.0), driveSubsystem).withTimeout(0.1),
+    //   // Eject for 2 seconds
+    //   new RunCommand(() -> intakeSubsystem.startEject(), intakeSubsystem).withTimeout(1.0),
+    //   // Stop eject
+    //   intakeSubsystem.runOnce(() -> intakeSubsystem.stopEject())
+    // );
+    return new SimpleCoralAuto(driveSubsystem, intakeSubsystem);
   }
 }
