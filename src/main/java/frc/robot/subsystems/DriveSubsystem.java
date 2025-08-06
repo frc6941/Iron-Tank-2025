@@ -11,8 +11,10 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotConstants;
+
+import static frc.robot.RobotConstants.TankConstants.*;
 
 public class DriveSubsystem extends SubsystemBase {
     /**
@@ -45,28 +47,40 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setRPS(double leftRPS, double rightRPS) {
+        SmartDashboard.putNumber("DriveSubsystem/leftRPS",leftRPS);
+        SmartDashboard.putNumber("DriveSubsystem/rightRPS",rightRPS);
+
         motorLeft.setControl(new VelocityVoltage(leftRPS));
         motorRight.setControl(new VelocityVoltage(-rightRPS));
     }
 
+    /**
+     *
+     * @param forwardSpeed m/s
+     * @param turningSpeed rad/s
+     */
+
     // Run arcade drive based on setSpeeds
     public void setArcadeSpeed(double forwardSpeed, double turningSpeed) {
-        double leftSpeed = forwardSpeed + turningSpeed;
-        double rightSpeed = forwardSpeed - turningSpeed;
+        double forwardRPS = forwardSpeed/2/Math.PI/WHEEL_RADIUS*GEAR_RATIO;
+        double turningRPS = turningSpeed*WHEEL_TRACK/2*GEAR_RATIO;
 
-        setRPS(leftSpeed, rightSpeed);
+        SmartDashboard.putNumber("DriveSubsystem/forwardSpeed",forwardSpeed);
+        SmartDashboard.putNumber("DriveSubsystem/turningSpeed",turningSpeed);
+
+        setRPS(forwardRPS+turningRPS,forwardRPS-turningRPS);
     }
 
     @Override
     public void periodic() {
 //         This method will be called once per scheduler run
          motorLeft.getConfigurator().apply(new Slot0Configs().
-                 withKP(RobotConstants.TankConstants.TANK_PID.kP.get()).
-                 withKI(RobotConstants.TankConstants.TANK_PID.kI.get()).
-                 withKD(RobotConstants.TankConstants.TANK_PID.kD.get()));
+                 withKP(TANK_PID.kP.get()).
+                 withKI(TANK_PID.kI.get()).
+                 withKD(TANK_PID.kD.get()));
          motorRight.getConfigurator().apply(new Slot0Configs().
-                 withKP(RobotConstants.TankConstants.TANK_PID.kP.get()).
-                 withKI(RobotConstants.TankConstants.TANK_PID.kI.get()).
-                 withKD(RobotConstants.TankConstants.TANK_PID.kD.get()));
+                 withKP(TANK_PID.kP.get()).
+                 withKI(TANK_PID.kI.get()).
+                 withKD(TANK_PID.kD.get()));
     }
 }
