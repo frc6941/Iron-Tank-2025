@@ -5,11 +5,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.auto.SimpleCoralAuto;
 import frc.robot.subsystems.ClimberSubsystem;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 // import edu.wpi.first.wpilibj2.command.WaitCommand;
 // import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 // import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -43,7 +39,7 @@ public class RobotContainer {
 
         // Determine if quick turn should be active.
         // This is true if the driver is not commanding significant forward/backward speed.
-        boolean isQuickTurn = Math.abs(forward) < consts.Drive.QUICK_TURN_THRESHOLD;
+        boolean isQuickTurn = Math.abs(forward) < Constants.Drive.QUICK_TURN_THRESHOLD;
 
         // Apply the inputs to the new Cheesy Drive method in the subsystem
         driveSubsystem.cheesyDrive(forward, rotation, isQuickTurn);

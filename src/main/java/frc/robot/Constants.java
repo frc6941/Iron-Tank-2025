@@ -5,14 +5,14 @@ import frc.robot.utils.TunableNumber;
 /*
  * T0 Constants that are either measured, tuned, or set by the team.
  */
-public class consts {
+public class Constants {
 
     /* =============================== |
      *             CAN ID              |
      * ============================== */
     public static final class CANID {
         // ... (no changes here)
-        public static final int LEFTMOTOR = 4;
+        public static final int LEFTMOTOR = 0;
         public static final int LEFTMOTORFOLLEWER = 2;
         public static final int RIGHTMOTOR = 1;
         public static final int RIGHTMOTORFOLLOWER = 3;
@@ -46,9 +46,9 @@ public class consts {
             public static final TunableNumber kG = new TunableNumber("position_kG", 0.0);
         }
         public static final class pivotPID {
-            public static final TunableNumber kP = new TunableNumber("pivot_kP", 5);
-            public static final TunableNumber kI = new TunableNumber("pivot_kI", 0.2);
-            public static final TunableNumber kD = new TunableNumber("pivot_kD", 0.1);
+            public static final TunableNumber kP = new TunableNumber("pivot_kP", 100);
+            public static final TunableNumber kI = new TunableNumber("pivot_kI", 0);
+            public static final TunableNumber kD = new TunableNumber("pivot_kD", 0);
         }
         public static final class rollerPID {
             public static final TunableNumber kP = new TunableNumber("roller_kP", 4);
@@ -131,9 +131,9 @@ public class consts {
     // ... (no changes here)
     public static final boolean TUNING = true;
     public static final TunableNumber INTAKE_ROLLER_POWER = new TunableNumber("intake_roller_power", 0.4);
-    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 70.0/360*12.0);
+    public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", -0.16);
     public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
-    public static final TunableNumber INTAKE_HOME_POSITION = new TunableNumber("intake_home_position", 70.0 / 360.0 * 12.0);
+    public static final TunableNumber INTAKE_HOME_POSITION = new TunableNumber("intake_home_position", -0.05);
     public static final TunableNumber INTAKE_PIVOT_SPEED = new TunableNumber("intake_pivot_speed", 0.8);
-    public static final TunableNumber INTAKE_EJECT_POSITION = new TunableNumber("intake_eject_position", 0.5);
+    public static final TunableNumber INTAKE_EJECT_POSITION = new TunableNumber("intake_eject_position", -0.1);
 }

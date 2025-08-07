@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -15,27 +16,25 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.consts;
-import frc.robot.utils.TunableNumber;
 
 public class DriveSubsystem extends SubsystemBase {
 
     /* Definitions */
     // T1 constants that are either calculated or retrieved from the robot's hardware.
-    private static final double WHEEL_CIRCUMFERENCE = Math.PI * consts.Superstructures.Chassis.WHEEL_DIAMETER; // in meters
-    private static final double METERS_PER_ROTATION = WHEEL_CIRCUMFERENCE / consts.Superstructures.Chassis.GEAR_RATIO;
+    private static final double WHEEL_CIRCUMFERENCE = Math.PI * Constants.Superstructures.Chassis.WHEEL_DIAMETER; // in meters
+    private static final double METERS_PER_ROTATION = WHEEL_CIRCUMFERENCE / Constants.Superstructures.Chassis.GEAR_RATIO;
     private static final double ROTATIONS_PER_METER = 1.0 / METERS_PER_ROTATION;
 
     // Motors
-    private static final TalonFX leftMotor = new TalonFX(consts.CANID.LEFTMOTOR);
-    private static final TalonFX rightMotor = new TalonFX(consts.CANID.RIGHTMOTOR);
-    private static final TalonFX leftMotorFollower = new TalonFX(consts.CANID.LEFTMOTORFOLLEWER);
-    private static final TalonFX rightMotorFollower = new TalonFX(consts.CANID.RIGHTMOTORFOLLOWER);
+    private static final TalonFX leftMotor = new TalonFX(Constants.CANID.LEFTMOTOR);
+    private static final TalonFX rightMotor = new TalonFX(Constants.CANID.RIGHTMOTOR);
+    private static final TalonFX leftMotorFollower = new TalonFX(Constants.CANID.LEFTMOTORFOLLEWER);
+    private static final TalonFX rightMotorFollower = new TalonFX(Constants.CANID.RIGHTMOTORFOLLOWER);
 
     // Controls
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
-    private final PIDController positionPID = new PIDController(consts.PID.positionPID.kP.get(), consts.PID.positionPID.kI.get(), consts.PID.positionPID.kD.get());
+    private final PIDController positionPID = new PIDController(Constants.PID.positionPID.kP.get(), Constants.PID.positionPID.kI.get(), Constants.PID.positionPID.kD.get());
 
     // Motor Controllers for DifferentialDrive
     private static final MotorController leftMotorController = new TalonFXMotorController(leftMotor);
@@ -97,13 +96,13 @@ public class DriveSubsystem extends SubsystemBase {
     public void configureMotors() {
         // Initialize the drive subsystem here
         Slot0Configs slot0Configs = generateSlot0Configs(
-            consts.PID.driveMotorPID.kP.get(),
-            consts.PID.driveMotorPID.kI.get(),
-            consts.PID.driveMotorPID.kD.get(),
-            consts.PID.driveMotorPID.kS.get(),
-            consts.PID.driveMotorPID.kV.get(),
-            consts.PID.driveMotorPID.kA.get(),
-            consts.PID.driveMotorPID.kG.get()
+            Constants.PID.driveMotorPID.kP.get(),
+            Constants.PID.driveMotorPID.kI.get(),
+            Constants.PID.driveMotorPID.kD.get(),
+            Constants.PID.driveMotorPID.kS.get(),
+            Constants.PID.driveMotorPID.kV.get(),
+            Constants.PID.driveMotorPID.kA.get(),
+            Constants.PID.driveMotorPID.kG.get()
         );
         TalonFXConfiguration leftTalonFXConfig = generateTalonFXConfig(true, NeutralModeValue.Brake, slot0Configs);
         TalonFXConfiguration rightTalonFXConfig = generateTalonFXConfig(false, NeutralModeValue.Brake, slot0Configs);
@@ -144,8 +143,8 @@ public class DriveSubsystem extends SubsystemBase {
     // *** NEW: Cheesy Drive implementation with negative inertia and quick-turn ***
     public void cheesyDrive(double forward, double rotation, boolean isQuickTurn) {
         // Apply deadband from constants
-        double throttle = Math.abs(forward) < consts.Drive.DEADBAND ? 0.0 : forward;
-        double wheel = Math.abs(rotation) < consts.Drive.DEADBAND ? 0.0 : rotation;
+        double throttle = Math.abs(forward) < Constants.Drive.DEADBAND ? 0.0 : forward;
+        double wheel = Math.abs(rotation) < Constants.Drive.DEADBAND ? 0.0 : rotation;
 
         // --- Negative Inertia Logic ---
         double negInertia = wheel - mOldWheel;
@@ -153,12 +152,12 @@ public class DriveSubsystem extends SubsystemBase {
 
         double negInertiaScalar;
         if (wheel * negInertia > 0) {
-            negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTIA_SCALAR;
+            negInertiaScalar = Constants.Drive.CheesyDrive.NEG_INERTIA_SCALAR;
         } else {
-            if (Math.abs(wheel) > consts.Drive.CheesyDrive.NEG_INERTIA_THRESHOLD) {
-                negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTIA_TURN_SCALAR;
+            if (Math.abs(wheel) > Constants.Drive.CheesyDrive.NEG_INERTIA_THRESHOLD) {
+                negInertiaScalar = Constants.Drive.CheesyDrive.NEG_INERTIA_TURN_SCALAR;
             } else {
-                negInertiaScalar = consts.Drive.CheesyDrive.NEG_INERTia_CLOSE_SCALAR;
+                negInertiaScalar = Constants.Drive.CheesyDrive.NEG_INERTia_CLOSE_SCALAR;
             }
         }
         
@@ -215,8 +214,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void tankDrive(double leftSpeed, double rightSpeed) {
         // Apply speed limiting
-        leftSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, leftSpeed));
-        rightSpeed = Math.max(-consts.Limits.Chassis.MAX_OUTPUT, Math.min(consts.Limits.Chassis.MAX_OUTPUT, rightSpeed));
+        leftSpeed = Math.max(-Constants.Limits.Chassis.MAX_OUTPUT, Math.min(Constants.Limits.Chassis.MAX_OUTPUT, leftSpeed));
+        rightSpeed = Math.max(-Constants.Limits.Chassis.MAX_OUTPUT, Math.min(Constants.Limits.Chassis.MAX_OUTPUT, rightSpeed));
         
         // Use DifferentialDrive, ensuring inputs are not squared as calculations are already done
         differentialDrive.tankDrive(leftSpeed, rightSpeed, false);
@@ -258,7 +257,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void turnInPlace(double angle) {
         // Calculate the distance each wheel needs to travel for the desired rotation
-        double distance = (angle / 360.0) * Math.PI * consts.Superstructures.Chassis.TRACK_WIDTH; // in meters
+        double distance = (angle / 360.0) * Math.PI * Constants.Superstructures.Chassis.TRACK_WIDTH; // in meters
         double rotations = distance * ROTATIONS_PER_METER;
         
         // Store starting positions
@@ -322,21 +321,21 @@ public class DriveSubsystem extends SubsystemBase {
 
     private void updatePID() {
         // Check if any PID values have changed
-        boolean pidChanged = consts.PID.driveMotorPID.kP.hasChanged() ||
-                           consts.PID.driveMotorPID.kI.hasChanged() ||
-                           consts.PID.driveMotorPID.kD.hasChanged() ||
-                           consts.PID.driveMotorPID.kS.hasChanged() ||
-                           consts.PID.driveMotorPID.kV.hasChanged() ||
-                           consts.PID.driveMotorPID.kA.hasChanged() ||
-                           consts.PID.driveMotorPID.kG.hasChanged();
+        boolean pidChanged = Constants.PID.driveMotorPID.kP.hasChanged() ||
+                           Constants.PID.driveMotorPID.kI.hasChanged() ||
+                           Constants.PID.driveMotorPID.kD.hasChanged() ||
+                           Constants.PID.driveMotorPID.kS.hasChanged() ||
+                           Constants.PID.driveMotorPID.kV.hasChanged() ||
+                           Constants.PID.driveMotorPID.kA.hasChanged() ||
+                           Constants.PID.driveMotorPID.kG.hasChanged();
 
         // If any values changed, reconfigure the motors
         if (pidChanged) {
             Logger.recordOutput("Drive/PID/Reconfiguring", true);
             configureMotors();
-            Logger.recordOutput("Drive/PID/kP", consts.PID.driveMotorPID.kP.get());
-            Logger.recordOutput("Drive/PID/kI", consts.PID.driveMotorPID.kI.get());
-            Logger.recordOutput("Drive/PID/kD", consts.PID.driveMotorPID.kD.get());
+            Logger.recordOutput("Drive/PID/kP", Constants.PID.driveMotorPID.kP.get());
+            Logger.recordOutput("Drive/PID/kI", Constants.PID.driveMotorPID.kI.get());
+            Logger.recordOutput("Drive/PID/kD", Constants.PID.driveMotorPID.kD.get());
         } else {
             Logger.recordOutput("Drive/PID/Reconfiguring", false);
         }

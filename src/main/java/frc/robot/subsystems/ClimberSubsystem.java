@@ -15,10 +15,10 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.consts;
+import frc.robot.Constants;
 
 public class ClimberSubsystem extends SubsystemBase {
-    private final TalonFX climberMotor = new TalonFX(consts.CANID.CLIMBER_MOTOR);
+    private final TalonFX climberMotor = new TalonFX(Constants.CANID.CLIMBER_MOTOR);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
@@ -40,7 +40,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     /** Set climber voltage (tunable) */
     // public void setClimberVoltage() {
-    //     double voltage = consts.CLIMBER_VOLTAGE.get();
+    //     double voltage = Constants.CLIMBER_VOLTAGE.get();
     //     System.out.println("ClimberSubsystem: setClimberVoltage() called, voltage: " + voltage);
     //     climberMotor.setControl(voltageRequest.withOutput(voltage));
     //     Logger.recordOutput("Climber/SetVoltage", voltage);
@@ -53,7 +53,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // /** Move climber to zero position using voltage control */
     // public void goToZeroPosition() {
-    //     double target = frc.robot.consts.CLIMBER_ZERO_POSITION.get();
+    //     double target = frc.robot.Constants.CLIMBER_ZERO_POSITION.get();
     //     System.out.println("ClimberSubsystem: goToZeroPosition() called, target: " + target);
     //     targetPosition = target;
     //     movingToPosition = true;
@@ -62,7 +62,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // /** Move climber to start position using voltage control */
     // public void goToStartPosition() {
-    //     double target = frc.robot.consts.CLIMBER_START_POSITION.get();
+    //     double target = frc.robot.Constants.CLIMBER_START_POSITION.get();
     //     System.out.println("ClimberSubsystem: goToStartPosition() called, target: " + target);
     //     targetPosition = target;
     //     movingToPosition = true;
@@ -71,7 +71,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // /** Move climber to stop position using voltage control */
     // public void goToStopPosition() {
-    //     double target = frc.robot.consts.CLIMBER_STOP_POSITION.get();
+    //     double target = frc.robot.Constants.CLIMBER_STOP_POSITION.get();
     //     System.out.println("ClimberSubsystem: goToStopPosition() called, target: " + target);
     //     targetPosition = target;
     //     movingToPosition = true;
@@ -94,7 +94,7 @@ public class ClimberSubsystem extends SubsystemBase {
     //         double tolerance = 1.0; // Position tolerance in rotations
             
     //         if (Math.abs(positionError) > tolerance) {                // Apply voltage based on target position only
-    //             if (targetPosition == frc.robot.consts.CLIMBER_START_POSITION.get()) {
+    //             if (targetPosition == frc.robot.Constants.CLIMBER_START_POSITION.get()) {
     //                 // Moving to start position - always use positive voltage
     //                 climberMotor.setControl(voltageRequest.withOutput(4.0));
     //             } else {
