@@ -23,7 +23,6 @@ import frc.robot.consts;
 public class IntakeSubsystem extends SubsystemBase {
 
     // Motors
-
     private final TalonFX pivotMotor = new TalonFX(consts.CANID.PIVOTMOTOR);
     private final TalonFX rollerMotor = new TalonFX(consts.CANID.ROLLERMOTOR);
     private final CANcoder pivotEncoder = new CANcoder(consts.CANID.PIVOTENCODER);
@@ -33,8 +32,6 @@ public class IntakeSubsystem extends SubsystemBase {
     // private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
 
-
-    
     // State variables
     private double zeroPosition = 0.0; // Current zero position (set by Y button)
     private double targetPosition = 0.0; // Current target position for position control
@@ -45,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem() {
         configureMotors();
         CANcoderConfiguration CANcoder = new CANcoderConfiguration();
-        CANcoder.MagnetSensor.MagnetOffset = -0.384033203125; // Set your desired offset here
+        CANcoder.MagnetSensor.MagnetOffset = -0.230712890625; // Set your desired offset here
         CANcoder.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
         pivotEncoder.getConfigurator().apply(CANcoder);
 
@@ -87,12 +84,6 @@ public class IntakeSubsystem extends SubsystemBase {
         // Apply configurations
         var pivotResult = pivotMotor.getConfigurator().apply(pivotConfig);
         var rollerResult = rollerMotor.getConfigurator().apply(rollerConfig);
-        
-        System.out.println("IntakeSubsystem: Pivot motor config result: " + pivotResult);
-        System.out.println("IntakeSubsystem: Roller motor config result: " + rollerResult);
-        System.out.println("IntakeSubsystem: Pivot motor CAN ID: " + consts.CANID.PIVOTMOTOR);
-        System.out.println("IntakeSubsystem: Roller motor CAN ID: " + consts.CANID.ROLLERMOTOR);
-        System.out.println("IntakeSubsystem: Roller PID - kP: " + consts.PID.rollerPID.kP.get() + ", kI: " + consts.PID.rollerPID.kI.get() + ", kD: " + consts.PID.rollerPID.kD.get());
     }
 
 
@@ -101,31 +92,24 @@ public class IntakeSubsystem extends SubsystemBase {
      * Move pivot to zero position (called by B button)
      */
     public void goToZero() {
-        System.out.println("IntakeSubsystem: goToZero() called");
         targetPosition = zeroPosition;
-        System.out.println("IntakeSubsystem: Moving to zero position: " + targetPosition);
         isHolding = false; // Reset holding state when going to zero
-        System.out.println("IntakeSubsystem: Zero target set - position control active");
     }
 
     /**
      * Start roller eject (clockwise) - called by LT button
      */
     public void startEject() {
-        System.out.println("IntakeSubsystem: startEject() called");
         double power = consts.INTAKE_ROLLER_POWER.get();
-        System.out.println("IntakeSubsystem: Starting eject with power: " + power);
         rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isEjecting = true;
         isIntaking = false;
-        System.out.println("IntakeSubsystem: Eject started successfully");
     }
 
     /**
      * Stop roller eject
      */
     public void stopEject() {
-        System.out.println("IntakeSubsystem: stopEject() called");
         rollerMotor.setControl(dutyCycleRequest.withOutput(0.0));
         isEjecting = false;
         System.out.println("IntakeSubsystem: Eject stopped");
@@ -302,7 +286,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // Tunable constants logging
         Logger.recordOutput("Intake/Constants/RollerSpeed", consts.INTAKE_ROLLER_POWER.get());
-        Logger.recordOutput("Intake/Constants/HoldOffset", consts.INTAKE_HOLD_OFFSET.get());
         Logger.recordOutput("Intake/Constants/ElevatedPosition", consts.INTAKE_ELEVATED_POSITION.get());
         Logger.recordOutput("Intake/Constants/PositionTolerance", consts.INTAKE_POSITION_TOLERANCE.get());
         Logger.recordOutput("Intake/Constants/HomePosition", consts.INTAKE_HOME_POSITION.get());
@@ -329,12 +312,5 @@ public class IntakeSubsystem extends SubsystemBase {
         double pivotPosition = pivotMotor.getPosition().getValueAsDouble();
         double rollerVelocity = rollerMotor.getVelocity().getValueAsDouble();
         double rollerCurrent = rollerMotor.getStatorCurrent().getValueAsDouble();
-        
-        System.out.println("=== MOTOR STATUS ===");
-        System.out.println("Pivot Position: " + pivotPosition + " rotations");
-        System.out.println("Pivot Target: " + targetPosition + " rotations");
-        System.out.println("Roller Velocity: " + rollerVelocity + " RPS");
-        System.out.println("Roller Current: " + rollerCurrent + " Amps");
-        System.out.println("===================");
     }
 }

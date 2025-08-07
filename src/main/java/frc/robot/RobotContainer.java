@@ -54,35 +54,35 @@ public class RobotContainer {
 
     // B button - Move pivot back to zero position
     mainController.b().onTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
+      //System.out.println("=== B BUTTON PRESSED - Moving to zero position ===");
       intakeSubsystem.goToZero();
     }));
 
     // Left Bumper (LB) - Elevate pivot
     mainController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
+      //System.out.println("=== LEFT BUMPER PRESSED - Elevating pivot ===");
       intakeSubsystem.elevate();
     }));
 
     // Left Trigger (LT) - Elevate pivot
     mainController.leftTrigger().onTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== LT PRESSED - Elevating pivot ===");
+      //System.out.println("=== LT PRESSED - Elevating pivot ===");
       intakeSubsystem.goToEjectPosition();
     }));
 
     // Right Trigger (RT) - Eject while held
     mainController.rightTrigger().whileTrue(intakeSubsystem.run(() -> {
-      System.out.println("=== RT HELD - Ejecting ===");
+      //System.out.println("=== RT HELD - Ejecting ===");
       intakeSubsystem.startEject();
     }));
     mainController.rightTrigger().onFalse(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== RT RELEASED - Stopping eject ===");
+      //System.out.println("=== RT RELEASED - Stopping eject ===");
       intakeSubsystem.stopEject();
     }));
 
     // Right Bumper (RB) - Toggle intake (first press: start, second: stop)
     mainController.rightBumper().toggleOnTrue(intakeSubsystem.runOnce(() -> {
-      System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
+      //System.out.println("=== RIGHT BUMPER PRESSED - Toggling intake ===");
       if (!intakeSubsystem.isIntaking()) {
         intakeSubsystem.startIntake();
       } else {

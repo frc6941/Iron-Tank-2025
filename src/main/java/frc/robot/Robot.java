@@ -35,12 +35,9 @@ public class Robot extends LoggedRobot {
     // autonomous chooser on the dashboard.
     Logger.recordMetadata("ProjectName", "MyProject");
     Logger.addDataReceiver(new NT4Publisher());
-    Logger.addDataReceiver(new WPILOGWriter());
     Logger.start();
 
     m_robotContainer = new RobotContainer();
-
-
   }
 
   /**
