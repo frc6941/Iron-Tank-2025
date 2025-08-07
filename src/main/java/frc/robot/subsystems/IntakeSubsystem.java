@@ -137,7 +137,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void startIntake() {
         System.out.println("IntakeSubsystem: startIntake() called");
-        double power = -consts.INTAKE_ROLLER_POWER.get()-0.2;
+        double power = -consts.INTAKE_ROLLER_POWER.get()-0.4;
         System.out.println("IntakeSubsystem: Starting intake with power: " + power);
         rollerMotor.setControl(dutyCycleRequest.withOutput(power));
         isIntaking = true;

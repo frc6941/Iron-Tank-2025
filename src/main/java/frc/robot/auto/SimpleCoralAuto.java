@@ -63,7 +63,7 @@ public class SimpleCoralAuto extends Command {
     else if(timer.get() > drive_seconds && timer.get() < exjest_seconds)
     {
         driveSubsystem.arcadeDrive(0.0, 0.0);
-        intakeSubsystem.startEject();
+        // intakeSubsystem.startEject();
         
     }
   }
@@ -74,7 +74,7 @@ public class SimpleCoralAuto extends Command {
     // stop drive motors
     driveSubsystem.arcadeDrive(0.0, 0.0);
     intakeSubsystem.goToZero();
-    intakeSubsystem.stopRoller();
+    // intakeSubsystem.stopRoller();
     timer.stop();
   }
 

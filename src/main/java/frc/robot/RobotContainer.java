@@ -36,10 +36,10 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(new RunCommand(() -> {
         // Get joystick values
         // Left stick Y for forward/backward movement
-        double forward = -mainController.getLeftY();
+        double forward = -mainController.getLeftY()*0.8;
 
         // Right stick X for turning, inverted as in the original code
-        double rotation = -mainController.getRightX();
+        double rotation = -mainController.getRightX()*0.6;
 
         // Determine if quick turn should be active.
         // This is true if the driver is not commanding significant forward/backward speed.

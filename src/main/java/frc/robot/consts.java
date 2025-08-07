@@ -130,7 +130,7 @@ public class consts {
      * ============================== */
     // ... (no changes here)
     public static final boolean TUNING = true;
-    public static final TunableNumber INTAKE_ROLLER_POWER = new TunableNumber("intake_roller_power", 0.5);
+    public static final TunableNumber INTAKE_ROLLER_POWER = new TunableNumber("intake_roller_power", 0.4);
     public static final TunableNumber INTAKE_HOLD_OFFSET = new TunableNumber("intake_hold_offset", 0.5);
     public static final TunableNumber INTAKE_ELEVATED_POSITION = new TunableNumber("intake_elevated_position", 1.4575);
     public static final TunableNumber INTAKE_POSITION_TOLERANCE = new TunableNumber("intake_position_tolerance", 0.05);
