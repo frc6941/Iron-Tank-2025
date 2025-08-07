@@ -45,12 +45,11 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem() {
         configureMotors();
         CANcoderConfiguration CANcoder = new CANcoderConfiguration();
-        CANcoder.MagnetSensor.MagnetOffset = -0.382080078125; // Set your desired offset here
-        CANcoder.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        CANcoder.MagnetSensor.MagnetOffset = -0.384033203125; // Set your desired offset here
+        CANcoder.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
         pivotEncoder.getConfigurator().apply(CANcoder);
 
     }
-
     public void configureMotors() {
         // Configure pivot motor
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
