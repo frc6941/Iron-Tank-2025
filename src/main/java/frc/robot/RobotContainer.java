@@ -4,9 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.commands.ShootCommand;
+import frc.robot.subsystems.Roller.RollerIO;
+import frc.robot.subsystems.Roller.RollerIOReal;
+import frc.robot.subsystems.Roller.RollerIOSim;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.tank.TankIOReal;
+import frc.robot.subsystems.tank.TankIOSim;
+import frc.robot.subsystems.tank.TankSubsystem;
 
 
 /**
@@ -16,17 +27,17 @@ import frc.robot.subsystems.DriveSubsystem;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    // The robot's subsystems and commands are defined here...
-    private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
-
     // Creates the Xbox controller to drive the robot
     CommandXboxController mainController = new CommandXboxController(0);
-
+    // The robot's subsystems and commands are defined here...
+    private TankSubsystem m_tankSubsystem;
+    private ShooterSubsystem m_shooterSubsystem;
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
         // Configure the trigger bindings
+        configureSubsystems();
         configureBindings();
     }
 
@@ -43,6 +54,27 @@ public class RobotContainer {
         */
     }
 
+    private void configureSubsystems() {
+        if (RobotBase.isSimulation()) {
+            m_tankSubsystem = new TankSubsystem(new TankIOSim());
+            m_shooterSubsystem = new ShooterSubsystem(new RollerIOSim(1,2,
+                    new SimpleMotorFeedforward(
+                            RobotConstants.ShooterConstants.ShooterPID.kS.get(),
+                            RobotConstants.ShooterConstants.ShooterPID.kV.get()),
+                    new ProfiledPIDController(
+                            RobotConstants.ShooterConstants.ShooterPID.kP.get(),
+                            RobotConstants.ShooterConstants.ShooterPID.kI.get(),
+                            RobotConstants.ShooterConstants.ShooterPID.kD.get(),
+                            new TrapezoidProfile.Constraints(15,1)
+                    ))); {
+            }
+        } else {
+            m_tankSubsystem = new TankSubsystem(new TankIOReal());
+            m_shooterSubsystem = new ShooterSubsystem(new RollerIOReal(
+                    7,"rio",100,100,false,false));
+        }
+    }
+
     /**
      * Use this method to define your trigger->command mappings.
      */
@@ -51,29 +83,20 @@ public class RobotContainer {
 
         // Run motor with setSpeeds command
         Command arcadeDrive =
-                m_driveSubsystem.run(
+                m_tankSubsystem.run(
                         () -> {
-                            m_driveSubsystem.setArcadeSpeed(
-                                    deadBand(-mainController.getLeftY() * RobotConstants.TankConstants.MAX_SPEED_METERS_PER_SECOND, 0.05),
-                                    deadBand(mainController.getRightX() * RobotConstants.TankConstants.MAX_ANGULAR_SPEED_RAD_PER_SECOND, 0.05)
+                            m_tankSubsystem.setArcadeSpeed(
+                                    RobotConstants.TankConstants.MAX_SPEED.times(deadBand(-mainController.getLeftY(),0.05)),
+                                    RobotConstants.TankConstants.MAX_ANGULAR_SPEED.times(deadBand(-mainController.getRightX(),0.05))
                             );
                         }
                 );
 
-        Command tankDrive =
-                m_driveSubsystem.run(
-                        () -> {
-                            m_driveSubsystem.setSpeeds(
-                                    deadBand(-mainController.getLeftY(), 0.1),
-                                    deadBand(-mainController.getRightY(), 0.1)
-                            );
-                        }
-                );
+        mainController.a().whileTrue(new ShootCommand(m_shooterSubsystem));
 
-        m_driveSubsystem.setDefaultCommand(arcadeDrive);
-
-        mainController.a().toggleOnTrue(tankDrive);
+        m_tankSubsystem.setDefaultCommand(arcadeDrive);
     }
+
 
     public Command getAutonomousCommand() {
         // An example command will be run in autonomous
