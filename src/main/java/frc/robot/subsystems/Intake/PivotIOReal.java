@@ -48,6 +48,8 @@ public class PivotIOReal implements PivotIO {
                 tempCelsius,
                 currentPositionRot
         );
+
+        motor.setControl(new PositionVoltage(Rotations.of(IntakeConstants.ELEVATED_POSITION_DEGREES.get())));
     }
 
     public void configureMotors() {
