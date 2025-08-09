@@ -46,20 +46,22 @@ public class TankSubsystem extends SubsystemBase {
     public void setArcadeSpeed(LinearVelocity forwardSpeed, AngularVelocity turningSpeed) {
         DifferentialDriveWheelSpeeds wheelSpeeds =
                 kinematics.toWheelSpeeds(
-                new ChassisSpeeds(forwardSpeed,MetersPerSecond.of(0),turningSpeed));
+                        new ChassisSpeeds(forwardSpeed, MetersPerSecond.of(0), turningSpeed));
 
-        SmartDashboard.putNumber("TankSubsystem/forwardSpeed", forwardSpeed.in(MetersPerSecond));
-        SmartDashboard.putNumber("TankSubsystem/turningSpeed", turningSpeed.in(RadiansPerSecond));
+        Logger.recordOutput("TankSubsystem/forwardSpeed", forwardSpeed.in(MetersPerSecond));
+        Logger.recordOutput("TankSubsystem/turningSpeed", turningSpeed.in(RadiansPerSecond));
+        Logger.recordOutput("TankSubsystem/targetLeftMPS", wheelSpeeds.leftMetersPerSecond);
+        Logger.recordOutput("TankSubsystem/targetRightMPS", wheelSpeeds.rightMetersPerSecond);
 
         io.setRPS(
-                RotationsPerSecond.of(wheelSpeeds.leftMetersPerSecond / (WHEEL_RADIUS.in(Meters) * 2 * Math.PI) * GEAR_RATIO),
+                RotationsPerSecond.of(-wheelSpeeds.leftMetersPerSecond / (WHEEL_RADIUS.in(Meters) * 2 * Math.PI) * GEAR_RATIO),
                 RotationsPerSecond.of(wheelSpeeds.rightMetersPerSecond / (WHEEL_RADIUS.in(Meters) * 2 * Math.PI) * GEAR_RATIO));
     }
 
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs("Tank",inputs);
+        Logger.processInputs("Tank", inputs);
 
         updatePoseFromRPS();
 
@@ -67,8 +69,8 @@ public class TankSubsystem extends SubsystemBase {
         System.out.println(robotPose);
     }
 
-    private AngularVelocity chassisSpeedToMotorRPS(double chassisSpeedMetersPerSecond){
-        return RotationsPerSecond.of(chassisSpeedMetersPerSecond/(WHEEL_RADIUS.in(Meters)*2*Math.PI)).times(GEAR_RATIO);
+    private AngularVelocity chassisSpeedToMotorRPS(double chassisSpeedMetersPerSecond) {
+        return RotationsPerSecond.of(chassisSpeedMetersPerSecond / (WHEEL_RADIUS.in(Meters) * 2 * Math.PI)).times(GEAR_RATIO);
     }
 
     private void updatePoseFromRPS() {

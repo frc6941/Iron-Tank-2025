@@ -10,8 +10,10 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.ShootCommand;
-import frc.robot.subsystems.Roller.RollerIO;
+import frc.robot.commands.*;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Intake.PivotIOReal;
+import frc.robot.subsystems.Intake.PivotIOSim;
 import frc.robot.subsystems.Roller.RollerIOReal;
 import frc.robot.subsystems.Roller.RollerIOSim;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
@@ -32,6 +34,8 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private TankSubsystem m_tankSubsystem;
     private ShooterSubsystem m_shooterSubsystem;
+    private IntakeSubsystem m_intakeSubsystem;
+
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
@@ -57,7 +61,7 @@ public class RobotContainer {
     private void configureSubsystems() {
         if (RobotBase.isSimulation()) {
             m_tankSubsystem = new TankSubsystem(new TankIOSim());
-            m_shooterSubsystem = new ShooterSubsystem(new RollerIOSim(1,2,
+            m_shooterSubsystem = new ShooterSubsystem(new RollerIOSim(1, 2,
                     new SimpleMotorFeedforward(
                             RobotConstants.ShooterConstants.ShooterPID.kS.get(),
                             RobotConstants.ShooterConstants.ShooterPID.kV.get()),
@@ -65,13 +69,32 @@ public class RobotContainer {
                             RobotConstants.ShooterConstants.ShooterPID.kP.get(),
                             RobotConstants.ShooterConstants.ShooterPID.kI.get(),
                             RobotConstants.ShooterConstants.ShooterPID.kD.get(),
-                            new TrapezoidProfile.Constraints(15,1)
-                    ))); {
-            }
+                            new TrapezoidProfile.Constraints(15, 1)
+                    )));
+            m_intakeSubsystem = new IntakeSubsystem(
+                    new RollerIOSim(1, 2,
+                            new SimpleMotorFeedforward(
+                                    RobotConstants.IntakeConstants.IntakeRollerPID.kS.get(),
+                                    RobotConstants.IntakeConstants.IntakeRollerPID.kV.get()),
+                            new ProfiledPIDController(
+                                    RobotConstants.IntakeConstants.IntakeRollerPID.kP.get(),
+                                    RobotConstants.IntakeConstants.IntakeRollerPID.kI.get(),
+                                    RobotConstants.IntakeConstants.IntakeRollerPID.kD.get(),
+                                    new TrapezoidProfile.Constraints(15, 1)
+                            )),
+                    new PivotIOSim()
+            );
         } else {
             m_tankSubsystem = new TankSubsystem(new TankIOReal());
             m_shooterSubsystem = new ShooterSubsystem(new RollerIOReal(
-                    7,"rio",100,100,false,false));
+                    7, "rio", 100, 100, false, false));
+            m_intakeSubsystem = new IntakeSubsystem(
+                    new RollerIOReal(
+                            RobotConstants.IntakeConstants.ROLLER_MOTOR_ID, "rio",
+                            100, 100,
+                            false, false),
+                    new PivotIOReal()
+            );
         }
     }
 
@@ -86,13 +109,19 @@ public class RobotContainer {
                 m_tankSubsystem.run(
                         () -> {
                             m_tankSubsystem.setArcadeSpeed(
-                                    RobotConstants.TankConstants.MAX_SPEED.times(deadBand(-mainController.getLeftY(),0.05)),
-                                    RobotConstants.TankConstants.MAX_ANGULAR_SPEED.times(deadBand(-mainController.getRightX(),0.05))
+                                    RobotConstants.TankConstants.MAX_SPEED.times(deadBand(-mainController.getLeftY(), 0.05)),
+                                    RobotConstants.TankConstants.MAX_ANGULAR_SPEED.times(deadBand(-mainController.getRightX(), 0.05))
                             );
                         }
                 );
 
         mainController.a().whileTrue(new ShootCommand(m_shooterSubsystem));
+
+        mainController.rightBumper().toggleOnTrue(new IntakeCommand(m_intakeSubsystem));
+        mainController.rightTrigger().whileTrue(new EjectCommand(m_intakeSubsystem));
+
+        mainController.leftBumper().whileTrue(new PivotUpCommand(m_intakeSubsystem));
+        mainController.leftTrigger().whileTrue(new PivotDownCommand(m_intakeSubsystem));
 
         m_tankSubsystem.setDefaultCommand(arcadeDrive);
     }

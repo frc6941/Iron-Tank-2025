@@ -5,6 +5,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -25,12 +26,14 @@ public class TankIOReal implements TankIO {
     private final StatusSignal<Current> rightMotorStatorCurrentAmps = motorRight.getStatorCurrent();
     private final StatusSignal<Current> rightMotorSupplyCurrentAmps = motorRight.getSupplyCurrent();
     private final StatusSignal<Temperature> rightMotorTempCelsius = motorRight.getDeviceTemp();
+    TalonFX motorRightFollower = new TalonFX(3, "rio");
     TalonFX motorLeft = new TalonFX(0, "rio");
     private final StatusSignal<AngularVelocity> leftMotorVelocityRotPerSec = motorLeft.getVelocity();
     private final StatusSignal<Voltage> leftMotorAppliedVolts = motorLeft.getSupplyVoltage();
     private final StatusSignal<Current> leftMotorStatorCurrentAmps = motorLeft.getStatorCurrent();
     private final StatusSignal<Current> leftMotorSupplyCurrentAmps = motorLeft.getSupplyCurrent();
     private final StatusSignal<Temperature> leftMotorTempCelsius = motorLeft.getDeviceTemp();
+    TalonFX motorleftFollower = new TalonFX(2, "rio");
     TalonFXConfigurator motorRightConfigurator = motorRight.getConfigurator();
     TalonFXConfigurator motorLeftConfigurator = motorLeft.getConfigurator();
 
@@ -41,14 +44,18 @@ public class TankIOReal implements TankIO {
 
         motorLeftConfigurator.apply(motorOutputConfigs);
         motorRightConfigurator.apply(motorOutputConfigs);
+        motorleftFollower.getConfigurator().apply(motorOutputConfigs);
+        motorleftFollower.setControl(new Follower(motorLeft.getDeviceID(), false));
+        motorRightFollower.getConfigurator().apply(motorOutputConfigs);
+        motorRightFollower.setControl(new Follower(motorRight.getDeviceID(), false));
     }
 
     public void setRPS(AngularVelocity leftRPS, AngularVelocity rightRPS) {
         Logger.recordOutput("DriveSubsystem/TargetleftRPS", leftRPS.in(RotationsPerSecond));
         Logger.recordOutput("DriveSubsystem/TargetrightRPS", -rightRPS.in(RotationsPerSecond));
 
-        motorLeft.setControl(new VelocityVoltage(leftRPS.in(RotationsPerSecond)));
-        motorRight.setControl(new VelocityVoltage(-rightRPS.in(RotationsPerSecond)));
+        motorLeft.setControl(new VelocityVoltage(leftRPS));
+        motorRight.setControl(new VelocityVoltage(rightRPS));
     }
 
     @Override
@@ -76,13 +83,14 @@ public class TankIOReal implements TankIO {
         inputs.rightMotorTempCelsius = rightMotorTempCelsius.getValueAsDouble();
         inputs.rightMotorVelocityRotPerSec = rightMotorVelocityRotPerSec.getValueAsDouble();
         if (RobotConstants.TUNING) {
-            motorLeft.getConfigurator().apply(new Slot0Configs().withKP(RobotConstants.TankConstants.TANK_PID.kP.get())
+            motorLeft.getConfigurator().apply(new Slot0Configs()
+                    .withKP(RobotConstants.TankConstants.TANK_PID.kP.get())
                     .withKI(RobotConstants.TankConstants.TANK_PID.kI.get())
                     .withKD(RobotConstants.TankConstants.TANK_PID.kD.get()));
             motorRight.getConfigurator().apply(new Slot0Configs()
                     .withKP(RobotConstants.TankConstants.TANK_PID.kP.get())
-                            .withKI(RobotConstants.TankConstants.TANK_PID.kI.get())
-                            .withKD(RobotConstants.TankConstants.TANK_PID.kD.get()));
+                    .withKI(RobotConstants.TankConstants.TANK_PID.kI.get())
+                    .withKD(RobotConstants.TankConstants.TANK_PID.kD.get()));
         }
     }
 }
