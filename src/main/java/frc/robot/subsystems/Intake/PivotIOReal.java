@@ -43,6 +43,7 @@ public class PivotIOReal implements PivotIO {
                 velocityRotPerSec,
                 appliedVolts,
                 motorVolts,
+                
                 statorCurrentAmps,
                 supplyCurrentAmps,
                 tempCelsius,
