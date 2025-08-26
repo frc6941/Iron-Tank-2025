@@ -37,7 +37,7 @@ public class RobotContainer {
     private TankSubsystem m_tankSubsystem;
     private ShooterSubsystem m_shooterSubsystem;
     private IntakeSubsystem m_intakeSubsystem;
-    
+
     private double targetangle;
     private double position;
 
@@ -123,6 +123,8 @@ public class RobotContainer {
         mainController.a().whileTrue(new ShootCommand(m_shooterSubsystem));
 
         mainController.leftBumper().whileTrue(new PivotDownCommand(m_intakeSubsystem, position, targetangle = RobotConstants.IntakeConstants.INTAKE_POSITION_DEGREES.get()));
+        mainController.leftTrigger().whileTrue(new PivotDownCommand(m_intakeSubsystem, position, targetangle = RobotConstants.IntakeConstants.ELEVATED_POSITION_DEGREES.get()));
+
         mainController.rightTrigger().whileTrue(new EjectCommand(m_intakeSubsystem));
 
         m_tankSubsystem.setDefaultCommand(arcadeDrive);

@@ -56,9 +56,9 @@ public class RobotConstants {
         public static final TunableNumber EJECT_VOLTAGE = new TunableNumber("Intake/EJECT_VOLTAGE", -3);
 
         public static class IntakeMovePivotPID {
-            public static final TunableNumber kP = new TunableNumber("INTAKE_MOVE_PID/Pivot/KP", 3);
+            public static final TunableNumber kP = new TunableNumber("INTAKE_MOVE_PID/Pivot/KP", 20);
             public static final TunableNumber kI = new TunableNumber("INTAKE_MOVE_PID/Pivot/KI", 0.0);
-            public static final TunableNumber kD = new TunableNumber("INTAKE_MOVE_PID/Pivot/KD", 0.0);
+            public static final TunableNumber kD = new TunableNumber("INTAKE_MOVE_PID/Pivot/KD", 1.0);
             public static final TunableNumber kS = new TunableNumber("INTAKE_MOVE_PID/Pivot/KS", 0.0);
             public static final TunableNumber kV = new TunableNumber("INTAKE_MOVE_PID/Pivot/KV", 0.0);
             public static final TunableNumber kA = new TunableNumber("INTAKE_MOVE_PID/Pivot/KA", 0.0);
