@@ -51,11 +51,11 @@ public class PivotDownCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        m_IntakeSubsystem.setPivotPosition(Rotations.of(RobotConstants.IntakeConstants.ELEVATED_POSITION_DEGREES.get()));
+        m_IntakeSubsystem.setPivotPosition(Rotations.of(targetAngle));
     }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return m_IntakeSubsystem.getPivotPosition() == targetAngle;
     }
 }
