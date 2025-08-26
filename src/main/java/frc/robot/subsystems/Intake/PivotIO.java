@@ -10,6 +10,8 @@ public interface PivotIO {
 
     void updateInputs(PivotIOInputs inputs);
 
+    void setVoltage(double volts);
+
     @AutoLog
     class PivotIOInputs {
         public double velocityRotPerSec = 0.0;

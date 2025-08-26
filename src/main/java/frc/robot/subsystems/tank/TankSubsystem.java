@@ -66,7 +66,6 @@ public class TankSubsystem extends SubsystemBase {
         updatePoseFromRPS();
 
         Logger.recordOutput("Tank/TankPose", robotPose);
-        System.out.println(robotPose);
     }
 
     private AngularVelocity chassisSpeedToMotorRPS(double chassisSpeedMetersPerSecond) {

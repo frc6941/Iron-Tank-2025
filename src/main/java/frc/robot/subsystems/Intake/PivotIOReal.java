@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -43,7 +44,7 @@ public class PivotIOReal implements PivotIO {
                 velocityRotPerSec,
                 appliedVolts,
                 motorVolts,
-                
+
                 statorCurrentAmps,
                 supplyCurrentAmps,
                 tempCelsius,
@@ -62,13 +63,13 @@ public class PivotIOReal implements PivotIO {
         pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         updateConfigs(
-                IntakeConstants.IntakePivotPID.kP.get(),
-                IntakeConstants.IntakePivotPID.kI.get(),
-                IntakeConstants.IntakePivotPID.kD.get(),
-                IntakeConstants.IntakePivotPID.kA.get(),
-                IntakeConstants.IntakePivotPID.kV.get(),
-                IntakeConstants.IntakePivotPID.kS.get(),
-                IntakeConstants.IntakePivotPID.kG.get()
+                IntakeConstants.IntakeMovePivotPID.kP.get(),
+                IntakeConstants.IntakeMovePivotPID.kI.get(),
+                IntakeConstants.IntakeMovePivotPID.kD.get(),
+                IntakeConstants.IntakeMovePivotPID.kA.get(),
+                IntakeConstants.IntakeMovePivotPID.kV.get(),
+                IntakeConstants.IntakeMovePivotPID.kS.get(),
+                IntakeConstants.IntakeMovePivotPID.kG.get()
         );
 
         motor.getConfigurator().apply(pivotConfig);
@@ -110,4 +111,11 @@ public class PivotIOReal implements PivotIO {
         inputs.supplyCurrentAmps = supplyCurrentAmps.getValue().in(Amps);
         inputs.tempCelsius = tempCelsius.getValue().in(Celsius);
     }
+
+    @Override
+    public void setVoltage(double volts) {
+        motor.setControl(new VoltageOut(Volts.of(volts)));
+    }
+
+
 }

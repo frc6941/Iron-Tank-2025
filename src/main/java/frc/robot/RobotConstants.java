@@ -23,6 +23,13 @@ public class RobotConstants {
             public static final TunableNumber kI = new TunableNumber("TANK_PID/KI", 0);
             public static final TunableNumber kD = new TunableNumber("TANK_PID/KD", 0);
         }
+
+    }
+
+    public static class PigeonPID {
+        public static final TunableNumber kP = new TunableNumber("PIGEON_PID/KP", 0.03);
+        public static final TunableNumber kI = new TunableNumber("PIGEON_PID/KI", 0);
+        public static final TunableNumber kD = new TunableNumber("PIGEON_PID/KD", 0);
     }
 
     public static class ShooterConstants {
@@ -48,14 +55,14 @@ public class RobotConstants {
         public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("Intake/INTAKE_VOLTAGE", 4);
         public static final TunableNumber EJECT_VOLTAGE = new TunableNumber("Intake/EJECT_VOLTAGE", -3);
 
-        public static class IntakePivotPID {
-            public static final TunableNumber kP = new TunableNumber("INTAKE_PID/Pivot/KP", 130);
-            public static final TunableNumber kI = new TunableNumber("INTAKE_PID/Pivot/KI", 0);
-            public static final TunableNumber kD = new TunableNumber("INTAKE_PID/Pivot/KD", 5);
-            public static final TunableNumber kS = new TunableNumber("INTAKE_PID/Pivot/KS", 0.0);
-            public static final TunableNumber kV = new TunableNumber("INTAKE_PID/Pivot/KV", 0.0);
-            public static final TunableNumber kA = new TunableNumber("INTAKE_PID/Pivot/KA", 0.0);
-            public static final TunableNumber kG = new TunableNumber("INTAKE_PID/Pivot/KA", 0.0);
+        public static class IntakeMovePivotPID {
+            public static final TunableNumber kP = new TunableNumber("INTAKE_MOVE_PID/Pivot/KP", 3);
+            public static final TunableNumber kI = new TunableNumber("INTAKE_MOVE_PID/Pivot/KI", 0.0);
+            public static final TunableNumber kD = new TunableNumber("INTAKE_MOVE_PID/Pivot/KD", 0.0);
+            public static final TunableNumber kS = new TunableNumber("INTAKE_MOVE_PID/Pivot/KS", 0.0);
+            public static final TunableNumber kV = new TunableNumber("INTAKE_MOVE_PID/Pivot/KV", 0.0);
+            public static final TunableNumber kA = new TunableNumber("INTAKE_MOVE_PID/Pivot/KA", 0.0);
+            public static final TunableNumber kG = new TunableNumber("INTAKE_MOVE_PID/Pivot/KG", 0.0);
         }
 
         public static class IntakeRollerPID {

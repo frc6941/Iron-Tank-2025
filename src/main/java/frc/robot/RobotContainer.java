@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.EjectCommand;
-import frc.robot.commands.IntakerCommand;
+import frc.robot.commands.PivotDownCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Intake.PivotIOReal;
@@ -37,6 +37,9 @@ public class RobotContainer {
     private TankSubsystem m_tankSubsystem;
     private ShooterSubsystem m_shooterSubsystem;
     private IntakeSubsystem m_intakeSubsystem;
+    
+    private double targetangle;
+    private double position;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -119,14 +122,8 @@ public class RobotContainer {
 
         mainController.a().whileTrue(new ShootCommand(m_shooterSubsystem));
 
-
-        mainController.leftBumper().whileTrue(new IntakerCommand(m_intakeSubsystem));
+        mainController.leftBumper().whileTrue(new PivotDownCommand(m_intakeSubsystem, position, targetangle = RobotConstants.IntakeConstants.INTAKE_POSITION_DEGREES.get()));
         mainController.rightTrigger().whileTrue(new EjectCommand(m_intakeSubsystem));
-
-//        mainController.rightBumper().toggleOnTrue(new IntakeCommand(m_intakeSubsystem));
-
-//        mainController.leftBumper().whileTrue(new PivotUpCommand(m_intakeSubsystem));
-//        mainController.leftTrigger().whileTrue(new PivotDownCommand(m_intakeSubsystem));
 
         m_tankSubsystem.setDefaultCommand(arcadeDrive);
     }

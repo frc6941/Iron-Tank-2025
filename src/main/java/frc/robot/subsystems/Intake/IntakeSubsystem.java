@@ -13,10 +13,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 public class IntakeSubsystem extends SubsystemBase {
-
     private RollerIO rollerIO;
     private PivotIO pivotIO;
-
     private RollerIOInputsAutoLogged rollerIOInputsAutoLogged = new RollerIOInputsAutoLogged();
     private PivotIOInputsAutoLogged pivotIOInputsAutoLogged = new PivotIOInputsAutoLogged();
 
@@ -34,13 +32,13 @@ public class IntakeSubsystem extends SubsystemBase {
 
         if (RobotConstants.TUNING) {
             pivotIO.updateConfigs(
-                    RobotConstants.IntakeConstants.IntakePivotPID.kP.get(),
-                    RobotConstants.IntakeConstants.IntakePivotPID.kI.get(),
-                    RobotConstants.IntakeConstants.IntakePivotPID.kD.get(),
-                    RobotConstants.IntakeConstants.IntakePivotPID.kA.get(),
-                    RobotConstants.IntakeConstants.IntakePivotPID.kV.get(),
-                    RobotConstants.IntakeConstants.IntakePivotPID.kS.get(),
-                    RobotConstants.IntakeConstants.IntakePivotPID.kG.get()
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kP.get(),
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kI.get(),
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kD.get(),
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kA.get(),
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kV.get(),
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kS.get(),
+                    RobotConstants.IntakeConstants.IntakeMovePivotPID.kG.get()
             );
             rollerIO.updateConfigs(
                     RobotConstants.IntakeConstants.IntakeRollerPID.kP.get(),
@@ -53,8 +51,17 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
+
+    public double getPivotPosition() {
+        return pivotIOInputsAutoLogged.currentPositionRot;
+    }
+
     public void setPivotPosition(Angle position) {
         pivotIO.setPosition(position);
+    }
+
+    public void setPivotVoltage(Voltage voltage) {
+        pivotIO.setVoltage(voltage.in(Volts));
     }
 
     public void setRollerVoltage(Voltage voltage) {
