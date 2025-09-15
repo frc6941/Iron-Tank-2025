@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.RobotConstants.TankConstants.*;
@@ -23,6 +24,7 @@ public class TankSubsystem extends SubsystemBase {
 
     private final TankIO io;
     private final TankIOInputsAutoLogged inputs = new TankIOInputsAutoLogged();
+    private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(WHEEL_TRACK);
 
@@ -37,6 +39,8 @@ public class TankSubsystem extends SubsystemBase {
 
     public TankSubsystem(TankIO io) {
         this.io = io;
+        // gyro.calibrate(); // Calibrate on startup
+        gyro.reset();     // Reset to 0
     }
 
     /**
@@ -58,6 +62,16 @@ public class TankSubsystem extends SubsystemBase {
                 RotationsPerSecond.of(wheelSpeeds.rightMetersPerSecond / (WHEEL_RADIUS.in(Meters) * 2 * Math.PI) * GEAR_RATIO));
     }
 
+    // Get current angle (-180 to 180 degrees)
+    public double getGyroAngle() {
+        return gyro.getAngle();
+    }
+
+    // Reset gyro to 0
+    public void resetGyro() {
+        gyro.reset();
+    }
+
     @Override
     public void periodic() {
         io.updateInputs(inputs);
@@ -65,6 +79,9 @@ public class TankSubsystem extends SubsystemBase {
 
         updatePoseFromRPS();
 
+        // Add gyro logging
+        Logger.recordOutput("Tank/GyroAngle", getGyroAngle());
+        Logger.recordOutput("Tank/GyroRate", gyro.getRate());
         Logger.recordOutput("Tank/TankPose", robotPose);
     }
 
@@ -122,4 +139,3 @@ public class TankSubsystem extends SubsystemBase {
         lastTime = currentTime;
     }
 }
-

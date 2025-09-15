@@ -8,7 +8,7 @@ import frc.robot.RobotConstants;
 import frc.robot.subsystems.Roller.RollerIO;
 import frc.robot.subsystems.Roller.RollerIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
-
+import frc.robot.commands.PivotDownCommand;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -50,7 +50,6 @@ public class IntakeSubsystem extends SubsystemBase {
             );
         }
     }
-
 
     public double getPivotPosition() {
         return pivotIOInputsAutoLogged.currentPositionRot;

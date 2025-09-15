@@ -52,6 +52,7 @@ public class PivotDownCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         m_IntakeSubsystem.setPivotPosition(Rotations.of(targetAngle));
+        m_IntakeSubsystem.setRollerVoltage(Volts.of(0));
     }
 
     @Override

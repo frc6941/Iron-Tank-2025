@@ -50,9 +50,9 @@ public class RobotConstants {
         public static final int PIVOT_MOTOR_ID = 5;
         public static final int ROLLER_MOTOR_ID = 6;
         public static final int CAN_CODER_ID = 8;
-        public static final TunableNumber INTAKE_POSITION_DEGREES = new TunableNumber("Intake/INTAKE_POSITION_DEGREES", -0.037);
+        public static final TunableNumber INTAKE_POSITION_DEGREES = new TunableNumber("Intake/INTAKE_POSITION_DEGREES", -0.0365);
         public static final TunableNumber ELEVATED_POSITION_DEGREES = new TunableNumber("Intake/ELEVATE_POSITION_DEGREES", 0.168);
-        public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("Intake/INTAKE_VOLTAGE", 4);
+        public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("Intake/INTAKE_VOLTAGE", 6);
         public static final TunableNumber EJECT_VOLTAGE = new TunableNumber("Intake/EJECT_VOLTAGE", -3);
 
         public static class IntakeMovePivotPID {
